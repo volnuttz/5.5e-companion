@@ -6,6 +6,7 @@ const QRCode = require('qrcode');
 const os = require('os');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const db = require('./db');
 
 const app = express();
@@ -23,8 +24,31 @@ try { monstersDB = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'srd-5.2-monst
 let classFeatsDB = {};
 try { classFeatsDB = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'srd-5.2-class-features.json'), 'utf-8')); } catch(e) {}
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Global rate limit: 100 requests per minute per IP
+app.use(rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later' }
+}));
+
+// Strict rate limit for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  message: { error: 'Too many login attempts, please try again later' }
+});
+
+// Strict rate limit for PIN attempts
+const pinLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many PIN attempts, please try again later' }
+});
 
 // In-memory token store: token -> { username, dmId }
 const dmTokens = {};
@@ -92,43 +116,11 @@ app.get('/api/monsters', (req, res) => res.json(monstersDB));
 
 // --- DM Auth ---
 
-app.post('/api/auth/signup', async (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password required' });
-  }
-  if (username.length < 3) {
-    return res.status(400).json({ error: 'Username must be at least 3 characters' });
-  }
-  if (password.length < 4) {
-    return res.status(400).json({ error: 'Password must be at least 4 characters' });
-  }
-  if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
-    return res.status(400).json({ error: 'Username can only contain letters, numbers, hyphens, and underscores' });
-  }
-
-  try {
-    const existing = await db.query('SELECT id FROM dms WHERE LOWER(username) = LOWER($1)', [username]);
-    if (existing.rows.length > 0) {
-      return res.status(400).json({ error: 'Username already taken' });
-    }
-
-    const hash = await bcrypt.hash(password, 10);
-    const result = await db.query(
-      'INSERT INTO dms (username, password_hash) VALUES ($1, $2) RETURNING id, username',
-      [username, hash]
-    );
-    const dm = result.rows[0];
-    const token = crypto.randomBytes(32).toString('hex');
-    dmTokens[token] = { username: dm.username, dmId: dm.id };
-
-    res.json({ token, username: dm.username });
-  } catch (err) {
-    res.status(500).json({ error: 'Server error' });
-  }
+app.post('/api/auth/signup', authLimiter, (req, res) => {
+  res.status(403).json({ error: 'Registration is currently closed' });
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password required' });
@@ -165,6 +157,55 @@ app.get('/dm/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+// --- Character validation & sanitization ---
+const LIMITS = { equipment: 50, spells: 50, features: 50 };
+const STR_LIMITS = { name: 100, class: 50, species: 50, background: 100 };
+
+function sanitizeString(str, maxLen) {
+  if (typeof str !== 'string') return '';
+  return str.trim().slice(0, maxLen);
+}
+
+function validateCharacter(c) {
+  if (!c.name || typeof c.name !== 'string' || c.name.trim().length === 0) return 'Name is required';
+  if (c.name.length > STR_LIMITS.name) return `Name too long (max ${STR_LIMITS.name} chars)`;
+  if (c.class && c.class.length > STR_LIMITS.class) return 'Invalid class';
+  if (c.species && c.species.length > STR_LIMITS.species) return 'Invalid species';
+  if (c.background && c.background.length > STR_LIMITS.background) return 'Background too long';
+  if (c.level != null && (c.level < 1 || c.level > 20)) return 'Level must be 1-20';
+  if (c.HP != null && (c.HP < 0 || c.HP > 9999)) return 'Invalid HP';
+  if (c.AC != null && (c.AC < 0 || c.AC > 99)) return 'Invalid AC';
+  for (const a of ['STR','DEX','CON','INT','WIS','CHA']) {
+    if (c[a] != null && (c[a] < 1 || c[a] > 30)) return `Invalid ${a} score`;
+  }
+  if (c.equipment && c.equipment.length > LIMITS.equipment) return `Equipment limit reached (max ${LIMITS.equipment})`;
+  if (c.spells && c.spells.length > LIMITS.spells) return `Spells limit reached (max ${LIMITS.spells})`;
+  if (c.features && c.features.length > LIMITS.features) return `Features limit reached (max ${LIMITS.features})`;
+  return null;
+}
+
+function sanitizeCharacter(c) {
+  c.name = sanitizeString(c.name, STR_LIMITS.name);
+  c.class = sanitizeString(c.class, STR_LIMITS.class);
+  c.species = sanitizeString(c.species, STR_LIMITS.species);
+  c.background = sanitizeString(c.background, STR_LIMITS.background);
+  c.level = Math.max(1, Math.min(20, parseInt(c.level) || 1));
+  c.HP = Math.max(0, Math.min(9999, parseInt(c.HP) || 0));
+  c.AC = Math.max(0, Math.min(99, parseInt(c.AC) || 0));
+  for (const a of ['STR','DEX','CON','INT','WIS','CHA']) {
+    c[a] = Math.max(1, Math.min(30, parseInt(c[a]) || 10));
+  }
+  if (c.equipment) {
+    c.equipment = c.equipment.slice(0, LIMITS.equipment).map(e => ({
+      name: sanitizeString(e.name, 100),
+      type: sanitizeString(e.type, 50),
+      description: sanitizeString(e.description, 500),
+      quantity: Math.max(0, Math.min(9999, parseInt(e.quantity) || 1))
+    }));
+  }
+  return c;
+}
+
 // --- API: Characters (DM-scoped) ---
 
 app.get('/api/characters', authDM, async (req, res) => {
@@ -188,8 +229,14 @@ app.get('/api/characters/:id', authDM, async (req, res) => {
 
 app.post('/api/characters', authDM, async (req, res) => {
   const id = uuidv4();
-  const c = req.body;
+  const c = sanitizeCharacter(req.body);
+  const err = validateCharacter(c);
+  if (err) return res.status(400).json({ error: err });
   try {
+    const count = await db.query('SELECT COUNT(*) FROM characters WHERE dm_id = $1', [req.dmId]);
+    if (parseInt(count.rows[0].count) >= 20) {
+      return res.status(400).json({ error: 'Character limit reached (max 20)' });
+    }
     await db.query(
       `INSERT INTO characters (id, dm_id, name, class, species, level, background, hp, ac, str, dex, con, int, wis, cha, skills, features, currency, equipment, spells)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`,
@@ -206,7 +253,9 @@ app.post('/api/characters', authDM, async (req, res) => {
 });
 
 app.put('/api/characters/:id', authDM, async (req, res) => {
-  const c = req.body;
+  const c = sanitizeCharacter(req.body);
+  const err = validateCharacter(c);
+  if (err) return res.status(400).json({ error: err });
   try {
     const result = await db.query(
       `UPDATE characters SET name=$1, class=$2, species=$3, level=$4, background=$5,
@@ -241,9 +290,16 @@ app.delete('/api/characters/:id', authDM, async (req, res) => {
 // --- API: Sessions (DM-scoped) ---
 
 app.post('/api/sessions', authDM, async (req, res) => {
-  const { pin } = req.body;
-  if (!pin || pin.length < 3) {
+  let { pin } = req.body;
+  if (!pin || typeof pin !== 'string') {
+    return res.status(400).json({ error: 'PIN is required' });
+  }
+  pin = pin.trim().slice(0, 20);
+  if (pin.length < 3) {
     return res.status(400).json({ error: 'PIN must be at least 3 characters' });
+  }
+  if (!/^[a-zA-Z0-9]+$/.test(pin)) {
+    return res.status(400).json({ error: 'PIN must be alphanumeric' });
   }
 
   try {
@@ -317,7 +373,7 @@ app.get('/api/player/:dmUsername/characters/:id', async (req, res) => {
   }
 });
 
-app.post('/api/player/:dmUsername/join', async (req, res) => {
+app.post('/api/player/:dmUsername/join', pinLimiter, async (req, res) => {
   const { pin } = req.body;
   try {
     const result = await db.query(
@@ -333,7 +389,7 @@ app.post('/api/player/:dmUsername/join', async (req, res) => {
   }
 });
 
-app.post('/api/player/:dmUsername/claim', async (req, res) => {
+app.post('/api/player/:dmUsername/claim', pinLimiter, async (req, res) => {
   const { pin, characterId, playerName } = req.body;
   try {
     const result = await db.query(
