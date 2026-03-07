@@ -590,6 +590,24 @@ th {
   border-color: var(--gold);
 }
 
+/* SRD Attribution Footer */
+.srd-footer {
+  margin-top: 40px;
+  padding: 16px 20px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.srd-footer a {
+  color: var(--gold);
+}
+
+.srd-footer p {
+  margin: 4px 0;
+}
+
 /* Modal */
 .modal-overlay {
   display: none;
