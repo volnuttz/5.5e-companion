@@ -19,8 +19,6 @@ const SKILL_ABILITIES = [
   { name: 'Survival',        ability: 'WIS' }
 ];
 
-const ABILITIES = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
-
 function calcProfBonus(level) {
   return Math.ceil(level / 4) + 1;
 }
