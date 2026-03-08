@@ -69,6 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   checkExistingSession();
   await Promise.all([loadSpellsDB(), loadFeaturesDB(), loadEquipmentDB(), loadMonstersDB()]);
   await loadBattlefield();
+  loadNotes();
 
   document.getElementById('btn-new-session').addEventListener('click', createSession);
   document.getElementById('btn-show-qr').addEventListener('click', showQR);
@@ -137,6 +138,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('compendium-monster-cr').addEventListener('change', filterCompendium);
   document.getElementById('compendium-feature-source').addEventListener('change', filterCompendium);
   populateCompendiumMonsterFilters();
+
+  // Notes
+  const notesEditor = document.getElementById('notes-editor');
+  let notesSaveTimeout = null;
+  notesEditor.addEventListener('input', () => {
+    document.getElementById('notes-save-status').textContent = 'Unsaved changes...';
+    clearTimeout(notesSaveTimeout);
+    notesSaveTimeout = setTimeout(saveNotes, 1000);
+  });
 });
 
 function logout() {
@@ -1589,3 +1599,29 @@ async function importCharacterFile(event) {
   }
   loadCharacters();
 }
+
+// --- Notes ---
+async function loadNotes() {
+  try {
+    const res = await fetch('/api/notes', { headers: authHeaders() });
+    if (!res.ok) return;
+    const data = await res.json();
+    document.getElementById('notes-editor').value = data.notes || '';
+  } catch (e) {}
+}
+
+async function saveNotes() {
+  const notes = document.getElementById('notes-editor').value;
+  try {
+    const res = await fetch('/api/notes', {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ notes })
+    });
+    if (res.ok) {
+      document.getElementById('notes-save-status').textContent = 'Saved';
+      setTimeout(() => { document.getElementById('notes-save-status').textContent = ''; }, 2000);
+    }
+  } catch (e) {}
+}
+

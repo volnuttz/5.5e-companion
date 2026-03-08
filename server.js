@@ -379,6 +379,29 @@ app.put('/api/battlefield', authDM, async (req, res) => {
   }
 });
 
+// --- Notes ---
+app.get('/api/notes', authDM, async (req, res) => {
+  try {
+    const result = await db.query('SELECT notes FROM dms WHERE id = $1', [req.dmId]);
+    res.json({ notes: result.rows.length > 0 ? (result.rows[0].notes || '') : '' });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.put('/api/notes', authDM, async (req, res) => {
+  const { notes } = req.body;
+  if (typeof notes !== 'string' || notes.length > 50000) {
+    return res.status(400).json({ error: 'Notes too long (max 50,000 characters)' });
+  }
+  try {
+    await db.query('UPDATE dms SET notes = $1 WHERE id = $2', [notes, req.dmId]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 app.delete('/api/sessions', authDM, async (req, res) => {
   try {
     await db.query('DELETE FROM sessions WHERE dm_id = $1', [req.dmId]);

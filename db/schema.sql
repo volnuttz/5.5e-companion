@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS dms (
   username VARCHAR(50) UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   battlefield JSONB DEFAULT '[]',
+  notes TEXT DEFAULT '',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

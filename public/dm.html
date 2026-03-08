@@ -48,6 +48,7 @@
     <div class="tabs">
       <button class="tab active" data-tab="dm-tab-characters">Characters</button>
       <button class="tab" data-tab="dm-tab-battlefield">Battlefield</button>
+      <button class="tab" data-tab="dm-tab-notes">Notes</button>
       <button class="tab" data-tab="dm-tab-compendium">Compendium</button>
     </div>
 
@@ -89,6 +90,19 @@
         </div>
         <div id="battlefield-list"></div>
         <p id="battlefield-empty" style="color:var(--text-muted);">No monsters on the battlefield. Search and add monsters above.</p>
+      </div>
+    </div>
+
+    <!-- Notes Tab -->
+    <div class="tab-content" id="dm-tab-notes">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h2 style="margin:0;">Notes</h2>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span id="notes-save-status" style="font-size:0.8rem;color:var(--text-muted);"></span>
+          </div>
+        </div>
+        <textarea id="notes-editor" placeholder="Write your notes in markdown..." style="width:100%;min-height:500px;padding:12px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;font-family:'Crimson Text',serif;font-size:1rem;resize:vertical;line-height:1.6;"></textarea>
       </div>
     </div>
 
