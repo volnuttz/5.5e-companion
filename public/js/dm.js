@@ -698,10 +698,12 @@ async function openCharModal(id) {
     document.getElementById('char-modal-title').textContent = 'New Character';
   }
   modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeCharModal() {
   document.getElementById('char-modal').classList.remove('active');
+  document.body.style.overflow = '';
 }
 
 async function saveCharacter(e) {
