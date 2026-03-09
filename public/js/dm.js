@@ -44,6 +44,8 @@ let battlefieldMonsters = []; // { ...monsterData, _uid, currentHP }
 let treasurePool = []; // { name, type, description, quantity }
 let allCharacters = []; // cached for treasure assignment
 let shops = []; // [{ id, name, items: [{ name, type, description, price, denomination, quantity }] }]
+let characterHPState = {}; // { charId: { currentHP, tempHP } }
+let bfCharactersCache = []; // cached character data for battlefield rendering
 
 function getToken() {
   return localStorage.getItem('dmToken');
@@ -72,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   checkExistingSession();
   await Promise.all([loadSpellsDB(), loadFeaturesDB(), loadEquipmentDB(), loadMonstersDB()]);
   await loadBattlefield();
+  await loadCharacterHP();
   await loadTreasures();
   await loadShops();
   loadNotes();
@@ -116,6 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       document.getElementById(tab.dataset.tab).classList.add('active');
+      if (tab.dataset.tab === 'dm-tab-battlefield') refreshSessionCharacters();
     });
   });
 
@@ -886,6 +890,8 @@ function showSessionActive() {
   document.getElementById('btn-new-session').style.display = 'none';
   document.getElementById('btn-show-qr').style.display = '';
   document.getElementById('btn-end-session').style.display = '';
+  renderBattlefieldCharacters();
+  startBfCharPolling();
 }
 
 async function createSession() {
@@ -914,6 +920,8 @@ async function endSession() {
   document.getElementById('btn-new-session').style.display = '';
   document.getElementById('btn-show-qr').style.display = 'none';
   document.getElementById('btn-end-session').style.display = 'none';
+  stopBfCharPolling();
+  renderBattlefieldCharacters();
 }
 
 async function showQR() {
@@ -1177,6 +1185,152 @@ function showMonsterStats(uid) {
   document.getElementById('monster-modal-title').textContent = m._label;
   document.getElementById('monster-stat-block').innerHTML = buildMonsterStatBlockHTML(m);
   document.getElementById('monster-modal').classList.add('active');
+}
+
+let _bfCharInterval = null;
+
+function startBfCharPolling() {
+  stopBfCharPolling();
+  _bfCharInterval = setInterval(refreshSessionCharacters, 5000);
+}
+
+function stopBfCharPolling() {
+  if (_bfCharInterval) { clearInterval(_bfCharInterval); _bfCharInterval = null; }
+}
+
+async function refreshSessionCharacters() {
+  if (!currentSession) return;
+  try {
+    const res = await fetch('/api/sessions/mine', { headers: authHeaders() });
+    if (res.ok) {
+      const session = await res.json();
+      currentSession.characters = session.characters;
+      renderBattlefieldCharacters();
+    }
+  } catch (e) {}
+}
+
+// --- Character HP Tracking (Battlefield) ---
+
+async function loadCharacterHP() {
+  try {
+    const res = await fetch('/api/character-hp', { headers: authHeaders() });
+    if (res.ok) characterHPState = await res.json();
+  } catch (e) {}
+  renderBattlefieldCharacters();
+}
+
+function saveCharacterHP() {
+  fetch('/api/character-hp', {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify(characterHPState)
+  });
+}
+
+async function renderBattlefieldCharacters() {
+  const container = document.getElementById('bf-characters-list');
+  const emptyMsg = document.getElementById('bf-characters-empty');
+
+  if (!currentSession) {
+    bfCharactersCache = [];
+    container.innerHTML = '';
+    emptyMsg.style.display = '';
+    emptyMsg.textContent = 'No active session. Start a session to track character HP.';
+    return;
+  }
+
+  const sessionChars = currentSession.characters || {};
+  const charIds = Object.keys(sessionChars).filter(id => sessionChars[id].claimedBy);
+  if (charIds.length === 0) {
+    bfCharactersCache = [];
+    container.innerHTML = '';
+    emptyMsg.style.display = '';
+    emptyMsg.textContent = 'No characters claimed yet.';
+    return;
+  }
+
+  // Fetch character data
+  const characters = [];
+  for (const id of charIds) {
+    try {
+      const res = await fetch(`/api/characters/${id}`, { headers: authHeaders() });
+      if (res.ok) characters.push(await res.json());
+    } catch (e) {}
+  }
+
+  bfCharactersCache = characters;
+  drawBattlefieldCharacters();
+}
+
+function drawBattlefieldCharacters() {
+  const container = document.getElementById('bf-characters-list');
+  const emptyMsg = document.getElementById('bf-characters-empty');
+  const characters = bfCharactersCache;
+
+  if (characters.length === 0) {
+    container.innerHTML = '';
+    emptyMsg.style.display = '';
+    emptyMsg.textContent = 'No characters in session.';
+    return;
+  }
+
+  emptyMsg.style.display = 'none';
+
+  // Initialize HP state for new characters
+  characters.forEach(c => {
+    if (!characterHPState[c._id]) {
+      characterHPState[c._id] = { currentHP: c.HP, tempHP: 0 };
+    }
+    if (characterHPState[c._id].currentHP > c.HP) {
+      characterHPState[c._id].currentHP = c.HP;
+    }
+  });
+
+  container.innerHTML = characters.map(c => {
+    const state = characterHPState[c._id];
+    const hpPercent = Math.max(0, (state.currentHP / c.HP) * 100);
+    let hpColor = 'var(--hp-high)';
+    if (hpPercent <= 25) hpColor = 'var(--hp-low)';
+    else if (hpPercent <= 50) hpColor = 'var(--hp-mid)';
+    return `
+      <div class="bf-card" data-char-hp-id="${c._id}">
+        <div class="bf-header">
+          <strong>${esc(c.name)}</strong>
+          <span style="color:var(--text-muted);font-size:0.8rem;">Lvl ${c.level} ${esc(c.species || '')} ${esc(c.class)} | AC ${c.AC}</span>
+        </div>
+        <div class="bf-hp-row">
+          <button class="hp-btn" onclick="charHP('${c._id}', -1, ${c.HP})">−</button>
+          <button class="hp-btn hp-btn-sm" onclick="charHP('${c._id}', -5, ${c.HP})" style="font-size:0.7rem;">-5</button>
+          <div class="bf-hp-bar-container">
+            <div class="bf-hp-bar" style="width:${hpPercent}%;background:${hpColor};"></div>
+          </div>
+          <span class="bf-hp-text" style="min-width:70px;text-align:center;font-weight:600;">${state.currentHP} / ${c.HP}</span>
+          <button class="hp-btn hp-btn-sm" onclick="charHP('${c._id}', 5, ${c.HP})" style="font-size:0.7rem;">+5</button>
+          <button class="hp-btn" onclick="charHP('${c._id}', 1, ${c.HP})">+</button>
+        </div>
+        <div class="bf-hp-row" style="margin-top:4px;">
+          <button class="hp-btn hp-btn-sm" onclick="charTempHP('${c._id}', -1)">−</button>
+          <span style="color:var(--text-muted);font-size:0.85rem;min-width:80px;text-align:center;">Temp HP: ${state.tempHP}</span>
+          <button class="hp-btn hp-btn-sm" onclick="charTempHP('${c._id}', 1)">+</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function charHP(charId, delta, maxHP) {
+  if (!characterHPState[charId]) return;
+  characterHPState[charId].currentHP = Math.max(0, Math.min(maxHP, characterHPState[charId].currentHP + delta));
+  drawBattlefieldCharacters();
+  saveCharacterHP();
+}
+
+function charTempHP(charId, delta) {
+  if (!characterHPState[charId]) return;
+  characterHPState[charId].tempHP = Math.max(0, characterHPState[charId].tempHP + delta);
+  drawBattlefieldCharacters();
+  saveCharacterHP();
 }
 
 // --- Compendium ---

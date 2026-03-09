@@ -383,6 +383,33 @@ app.put('/api/battlefield', authDM, async (req, res) => {
   }
 });
 
+// --- Character HP (battlefield tracking) ---
+app.get('/api/character-hp', authDM, async (req, res) => {
+  try {
+    const result = await db.query('SELECT character_hp FROM dms WHERE id = $1', [req.dmId]);
+    res.json(result.rows.length > 0 ? (result.rows[0].character_hp || {}) : {});
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.put('/api/character-hp', authDM, async (req, res) => {
+  const hpData = req.body;
+  if (typeof hpData !== 'object' || Array.isArray(hpData)) {
+    return res.status(400).json({ error: 'Invalid character HP data' });
+  }
+  try {
+    await db.query('UPDATE dms SET character_hp = $1 WHERE id = $2', [JSON.stringify(hpData), req.dmId]);
+    // Broadcast HP changes to all characters in session
+    for (const charId of Object.keys(hpData)) {
+      broadcastCharacterUpdate(req.dmUsername, charId);
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // --- Treasures ---
 app.get('/api/treasures', authDM, async (req, res) => {
   try {
@@ -574,12 +601,18 @@ app.delete('/api/sessions', authDM, async (req, res) => {
 app.get('/api/player/:dmUsername/characters/:id', async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT c.* FROM characters c JOIN dms d ON c.dm_id = d.id
+      `SELECT c.*, d.character_hp FROM characters c JOIN dms d ON c.dm_id = d.id
        WHERE c.id = $1 AND d.username = $2`,
       [req.params.id, req.params.dmUsername]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
-    res.json(charRowToJSON(result.rows[0]));
+    const char = charRowToJSON(result.rows[0]);
+    const hpState = result.rows[0].character_hp || {};
+    if (hpState[char._id]) {
+      char.currentHP = hpState[char._id].currentHP;
+      char.tempHP = hpState[char._id].tempHP || 0;
+    }
+    res.json(char);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }

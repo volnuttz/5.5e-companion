@@ -31,10 +31,7 @@ let eventSource = null;
 
 // Player-local session state (preserved across DM updates)
 let playerState = {
-  currentHP: null,
-  tempHP: 0,
-  slotChecks: {},   // { "1-0": true, "2-1": false, ... }
-  coinDeltas: {}    // { CP: 0, SP: 0, ... } — difference from saved value
+  slotChecks: {}   // { "1-0": true, "2-1": false, ... }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -166,43 +163,27 @@ async function showCharacterSheet(characterId) {
 
   const profBonus = calcProfBonus(c.level);
   const maxHP = c.HP || 0;
+  const currentHP = c.currentHP != null ? c.currentHP : maxHP;
+  const tempHP = c.tempHP || 0;
 
-  // Preserve or initialize player-local HP
-  if (isFirstLoad || playerState.currentHP === null) {
-    playerState.currentHP = maxHP;
-    playerState.tempHP = 0;
+  if (isFirstLoad) {
     playerState.slotChecks = {};
-    playerState.coinDeltas = {};
   }
-  // Clamp currentHP to new maxHP if DM changed it
-  if (playerState.currentHP > maxHP) playerState.currentHP = maxHP;
 
-  let currentHP = playerState.currentHP;
-  let tempHP = playerState.tempHP;
-
-  function renderHP() {
-    playerState.currentHP = currentHP;
-    playerState.tempHP = tempHP;
-    document.getElementById('hp-current').textContent = currentHP;
-    document.getElementById('hp-max-val').textContent = maxHP;
-    document.getElementById('hp-temp').textContent = tempHP;
-  }
+  const hpPercent = maxHP > 0 ? Math.max(0, (currentHP / maxHP) * 100) : 0;
+  let hpColor = 'var(--hp-high, #4caf50)';
+  if (hpPercent <= 25) hpColor = 'var(--hp-low, #e53935)';
+  else if (hpPercent <= 50) hpColor = 'var(--hp-mid, #ff9800)';
 
   document.getElementById('combat-stats').innerHTML = `
     <div class="combat-stat">
       <div class="label">Hit Points</div>
       <div class="hp-tracker">
-        <div class="hp-row">
-          <button class="hp-btn" id="hp-down">\u2212</button>
-          <span class="value" id="hp-current">${currentHP}</span>
-          <button class="hp-btn" id="hp-up">+</button>
+        <div class="bf-hp-bar-container" style="margin:4px 0;">
+          <div class="bf-hp-bar" style="width:${hpPercent}%;background:${hpColor};"></div>
         </div>
-        <div class="hp-max">/ <span id="hp-max-val">${maxHP}</span></div>
-        <div class="hp-temp-row">
-          <button class="hp-btn hp-btn-sm" id="temp-down">\u2212</button>
-          <span class="hp-temp-label">Temp <span id="hp-temp">${tempHP}</span></span>
-          <button class="hp-btn hp-btn-sm" id="temp-up">+</button>
-        </div>
+        <div class="value" style="font-size:1.2rem;">${currentHP} / ${maxHP}</div>
+        ${tempHP > 0 ? `<div style="color:var(--text-muted);font-size:0.85rem;">Temp HP: ${tempHP}</div>` : ''}
       </div>
     </div>
     <div class="combat-stat">
@@ -212,11 +193,6 @@ async function showCharacterSheet(characterId) {
   `;
 
   document.getElementById('prof-bonus-label').textContent = `(Proficiency Bonus: +${profBonus})`;
-
-  document.getElementById('hp-down').onclick = () => { if (currentHP > 0) { currentHP--; renderHP(); } };
-  document.getElementById('hp-up').onclick = () => { if (currentHP < maxHP) { currentHP++; renderHP(); } };
-  document.getElementById('temp-down').onclick = () => { if (tempHP > 0) { tempHP--; renderHP(); } };
-  document.getElementById('temp-up').onclick = () => { tempHP++; renderHP(); };
 
   document.getElementById('ability-grid').innerHTML = ABILITIES.map(a => {
     const score = c[a] || 10;
@@ -266,34 +242,16 @@ async function showCharacterSheet(characterId) {
     return `<li><strong>${esc(f.name)}</strong>${f.sourceDetail ? ' <span style="color:var(--text-muted);font-size:0.8rem;">(' + esc(f.sourceDetail) + ')</span>' : ''}${f.description ? '<br><span style="font-size:0.9rem;color:var(--text-muted);">' + esc(f.description) + '</span>' : ''}</li>`;
   }).join('');
 
-  // --- Currency ---
+  // --- Currency (read-only, managed by DM) ---
   const cur = c.currency || {};
   const coins = ['CP','SP','EP','GP','PP'];
-  const coinValues = {};
-  coins.forEach(k => {
-    const saved = cur[k] || 0;
-    const delta = playerState.coinDeltas[k] || 0;
-    coinValues[k] = Math.max(0, saved + delta);
-  });
-
-  function renderCurrency() {
-    coins.forEach(k => {
-      document.getElementById(`coin-${k}`).textContent = coinValues[k];
-      // Update delta relative to saved
-      playerState.coinDeltas[k] = coinValues[k] - (cur[k] || 0);
-    });
-  }
 
   const currencyHtml = `
     <div class="currency-tracker">
       ${coins.map(k => `
         <div class="coin-group">
           <div class="coin-label">${k}</div>
-          <div class="coin-controls">
-            <button class="hp-btn hp-btn-sm" data-coin-down="${k}">\u2212</button>
-            <span class="coin-value" id="coin-${k}">${coinValues[k]}</span>
-            <button class="hp-btn hp-btn-sm" data-coin-up="${k}">+</button>
-          </div>
+          <span class="coin-value">${cur[k] || 0}</span>
         </div>
       `).join('')}
     </div>
@@ -311,11 +269,6 @@ async function showCharacterSheet(characterId) {
     `).join('');
 
   document.getElementById('equipment-display').innerHTML = currencyHtml + '<h3 style="margin-top:16px;">Equipment</h3>' + equipHtml;
-
-  coins.forEach(k => {
-    document.querySelector(`[data-coin-down="${k}"]`).onclick = () => { if (coinValues[k] > 0) { coinValues[k]--; renderCurrency(); } };
-    document.querySelector(`[data-coin-up="${k}"]`).onclick = () => { coinValues[k]++; renderCurrency(); };
-  });
 
   // --- Spellcasting Info ---
   const spellcastingAbility = SPELLCASTING_ABILITY[c.class] || null;

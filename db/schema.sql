@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS dms (
   treasures JSONB DEFAULT '[]',
   shops JSONB DEFAULT '[]',
   notes TEXT DEFAULT '',
+  character_hp JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
