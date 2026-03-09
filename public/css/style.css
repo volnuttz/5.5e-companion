@@ -1093,9 +1093,11 @@ h1.char-title {
   .modal {
     border-radius: 0 !important;
     max-width: 100% !important;
-    min-height: 100svh;
-    min-height: 100vh; /* fallback for browsers without svh */
-    overflow-y: auto;
+    /* Use explicit height so iOS Safari recognises a fixed scroll boundary.
+       min-height does not create a scroll container on iOS Safari. */
+    height: 100vh; /* fallback */
+    height: 100dvh; /* dynamic viewport — accounts for iOS address bar */
+    overflow-y: scroll; /* scroll (not auto) forces scrollability on iOS Safari */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
