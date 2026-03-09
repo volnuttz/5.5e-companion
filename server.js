@@ -152,7 +152,11 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
   }
 });
 
-// --- DM Pages ---
+// --- Pages ---
+
+app.get('/', (req, res) => {
+  res.redirect('/dm/login');
+});
 
 app.get('/dm', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'dm.html'));
