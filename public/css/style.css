@@ -111,6 +111,7 @@ h3 {
   letter-spacing: 0.5px;
   transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
   box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+  touch-action: manipulation;
 }
 
 .btn:hover {
@@ -201,6 +202,7 @@ h3 {
   letter-spacing: 0.5px;
   color: var(--text);
   transition: background 0.15s;
+  touch-action: manipulation;
 }
 
 .workspace-dropdown-item:last-child {
@@ -332,6 +334,7 @@ th {
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
   transition: all 0.2s;
+  touch-action: manipulation;
 }
 
 .tab:hover {
@@ -405,6 +408,7 @@ th {
   border-radius: 8px;
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  touch-action: manipulation;
 }
 
 .char-item:hover {
@@ -485,7 +489,7 @@ th {
 /* ── Skills list ── */
 .skills-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 6px;
 }
 
@@ -697,6 +701,7 @@ th {
   font-family: var(--font-body);
   color: var(--text);
   transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  touch-action: manipulation;
 }
 
 .hp-btn:hover {
@@ -766,6 +771,7 @@ th {
 .slot-bubble {
   display: inline-flex;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .slot-bubble input {
@@ -869,6 +875,12 @@ th {
   cursor: pointer;
   transition: color 0.15s;
   line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
 }
 
 .modal-close:hover {
@@ -1023,6 +1035,7 @@ h1.char-title {
   align-self: center;
   transition: transform 0.15s, opacity 0.15s;
   opacity: 0.7;
+  touch-action: manipulation;
 }
 
 .remove-item:hover {
@@ -1251,5 +1264,54 @@ h1.char-title {
   .item-actions select {
     flex: 1;
     min-width: 0;
+  }
+
+  /* iOS Safari zoom fix: inputs below 16px trigger auto-zoom on focus */
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px;
+  }
+
+  /* Dialog: constrain to viewport on narrow phones */
+  .dialog {
+    padding: 20px 16px;
+    max-width: calc(100vw - 32px);
+  }
+
+  /* Keep ability-score form row at 3 columns on mobile (inline style override) */
+  .stat-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* ── Workspace dropdown: prevent overflow on very small screens ── */
+@media (max-width: 400px) {
+  .workspace-dropdown {
+    right: auto;
+    left: 0;
+    min-width: 0;
+    width: calc(100vw - 40px);
+  }
+}
+
+/* ── Safe area insets for notched devices (viewport-fit=cover) ── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .container {
+    padding-left: calc(20px + env(safe-area-inset-left));
+    padding-right: calc(20px + env(safe-area-inset-right));
+  }
+  @media (max-width: 600px) {
+    .container {
+      padding-left: calc(10px + env(safe-area-inset-left));
+      padding-right: calc(10px + env(safe-area-inset-right));
+    }
+  }
+  /* Disconnect banner sits at top:0 and needs safe area padding */
+  #disconnect-banner {
+    padding-top: max(8px, env(safe-area-inset-top)) !important;
   }
 }
