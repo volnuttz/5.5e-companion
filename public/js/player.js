@@ -1,3 +1,17 @@
+// --- Dialog helper ---
+function dialogAlert(message, title, type = 'info') {
+  const icons = { warn: '\u26A0', info: '\u2139\uFE0F', success: '\u2714', error: '\u2718' };
+  const overlay = document.getElementById('dialog-overlay');
+  document.getElementById('dialog-icon').textContent = icons[type] || icons.info;
+  document.getElementById('dialog-icon').className = 'dialog-icon ' + type;
+  document.getElementById('dialog-title').textContent = title || 'Notice';
+  document.getElementById('dialog-message').textContent = message;
+  const btns = document.getElementById('dialog-buttons');
+  btns.innerHTML = '<button class="btn btn-primary btn-small">OK</button>';
+  btns.querySelector('button').addEventListener('click', () => overlay.classList.remove('active'));
+  overlay.classList.add('active');
+}
+
 const SKILL_ABILITIES = [
   { name: 'Acrobatics',      ability: 'DEX' },
   { name: 'Animal Handling',  ability: 'WIS' },
@@ -23,11 +37,14 @@ function calcProfBonus(level) {
   return Math.ceil(level / 4) + 1;
 }
 
-// Extract DM username from URL: /join/<dmUsername>
-const dmUsername = window.location.pathname.split('/').pop();
+// Extract roomId from URL: /join/<roomId>
+const roomId = window.location.pathname.split('/').pop();
 let sessionPin = '';
 let activeCharacterId = null;
-let eventSource = null;
+let playerPeer = null;
+let currentCharacter = null; // cached character data from DM
+let currentHPState = null;   // cached HP state from DM
+let joinTimeout = null;
 
 // Player-local session state (preserved across DM updates)
 let playerState = {
@@ -58,53 +75,96 @@ async function joinSession() {
 
   if (!sessionPin) { errorEl.textContent = 'Please enter the PIN'; errorEl.style.display = 'block'; return; }
 
-  const res = await fetch(`/api/player/${dmUsername}/join`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ pin: sessionPin })
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    errorEl.textContent = data.error;
+  // Connect to DM via PeerJS
+  try {
+    playerPeer = peerManager.createPlayerPeer(roomId);
+
+    // Set up message handler before connecting
+    playerPeer.onMessage(handleDMMessage);
+    playerPeer.onDisconnect(handleDisconnect);
+
+    await playerPeer.connect();
+  } catch (err) {
+    console.error('[Player] Connection failed:', err);
+    errorEl.textContent = 'Could not connect to DM. Make sure the session is active.';
     errorEl.style.display = 'block';
     return;
   }
 
-  // Connect to SSE
-  connectSSE();
+  // Send join request with PIN
+  playerPeer.sendToDM({ type: 'join', pin: sessionPin });
 
-  // Show character picker
-  document.getElementById('step-join').style.display = 'none';
-  document.getElementById('step-pick').style.display = '';
-  await renderCharacterPicker(data);
+  // Show loading state with timeout
+  document.getElementById('btn-join').disabled = true;
+  document.getElementById('btn-join').textContent = 'Connecting...';
+  joinTimeout = setTimeout(() => {
+    document.getElementById('btn-join').disabled = false;
+    document.getElementById('btn-join').textContent = 'Join';
+    errorEl.textContent = 'No response from DM. Check the PIN and try again.';
+    errorEl.style.display = 'block';
+  }, 8000);
 }
 
-function connectSSE() {
-  if (eventSource) eventSource.close();
-  eventSource = new EventSource(`/api/player/${dmUsername}/events`);
-  eventSource.onmessage = (e) => {
-    const msg = JSON.parse(e.data);
-    if (msg.type === 'character-updated' && activeCharacterId && msg.characterId === activeCharacterId) {
-      showCharacterSheet(activeCharacterId);
-    }
-  };
+function handleDMMessage(msg) {
+  switch (msg.type) {
+    case 'join-ok':
+      clearTimeout(joinTimeout);
+      document.getElementById('btn-join').disabled = false;
+      document.getElementById('btn-join').textContent = 'Join';
+      document.getElementById('step-join').style.display = 'none';
+      document.getElementById('step-pick').style.display = '';
+      renderCharacterPicker(msg.characters);
+      break;
+
+    case 'join-error':
+      clearTimeout(joinTimeout);
+      document.getElementById('btn-join').disabled = false;
+      document.getElementById('btn-join').textContent = 'Join';
+      const errorEl = document.getElementById('join-error');
+      errorEl.textContent = msg.error;
+      errorEl.style.display = 'block';
+      break;
+
+    case 'claim-ok':
+      activeCharacterId = msg.characterId;
+      currentCharacter = msg.character;
+      currentHPState = msg.hpState;
+      renderCharacterSheet(currentCharacter, currentHPState);
+      break;
+
+    case 'claim-error':
+      dialogAlert(msg.error || 'Could not select character', 'Error', 'error');
+      break;
+
+    case 'character-update':
+      if (msg.characterId === activeCharacterId) {
+        currentCharacter = msg.character;
+        currentHPState = msg.hpState;
+        renderCharacterSheet(currentCharacter, currentHPState);
+      }
+      break;
+
+    case 'character-list':
+      // DM may re-send character list (e.g. after adding characters to session)
+      if (!activeCharacterId) {
+        renderCharacterPicker(msg.characters);
+      }
+      break;
+  }
 }
 
-async function renderCharacterPicker(session) {
+function handleDisconnect() {
+  const banner = document.getElementById('disconnect-banner');
+  if (banner) {
+    banner.style.display = 'block';
+  }
+}
+
+function renderCharacterPicker(characters) {
   const container = document.getElementById('pick-list');
-  const charIds = Object.keys(session.characters);
-
-  const characters = await Promise.all(
-    charIds.map(async id => {
-      const res = await fetch(`/api/player/${dmUsername}/characters/${id}`);
-      const c = await res.json();
-      c._claimed = session.characters[id].claimedBy || null;
-      return c;
-    })
-  );
 
   container.innerHTML = characters.map(c => {
-    if (c._claimed) {
+    if (c.claimed) {
       return `
         <div class="char-item" style="opacity:0.5;cursor:default;">
           <div class="char-info">
@@ -116,7 +176,7 @@ async function renderCharacterPicker(session) {
       `;
     }
     return `
-      <div class="char-item" onclick="claimAndShow('${c._id}')">
+      <div class="char-item" onclick="claimCharacter('${c._id}')">
         <div class="char-info">
           <span class="char-name">${esc(c.name)}</span>
           <span class="char-meta">Level ${c.level} ${esc(c.species || '')} ${esc(c.class)}</span>
@@ -131,26 +191,16 @@ async function renderCharacterPicker(session) {
   }
 }
 
-async function claimAndShow(characterId) {
-  const res = await fetch(`/api/player/${dmUsername}/claim`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ pin: sessionPin, characterId, playerName: 'player-' + Date.now() })
+function claimCharacter(characterId) {
+  playerPeer.sendToDM({
+    type: 'claim',
+    characterId,
+    playerName: 'player-' + Date.now()
   });
-  if (!res.ok) {
-    const data = await res.json();
-    alert(data.error || 'Could not select character');
-    return;
-  }
-  showCharacterSheet(characterId);
 }
 
-async function showCharacterSheet(characterId) {
-  const isFirstLoad = activeCharacterId !== characterId;
-  activeCharacterId = characterId;
-
-  const res = await fetch(`/api/player/${dmUsername}/characters/${characterId}`);
-  const c = await res.json();
+function renderCharacterSheet(c, hpState) {
+  const isFirstLoad = !document.getElementById('step-sheet').style.display || document.getElementById('step-sheet').style.display === 'none';
 
   document.getElementById('step-join').style.display = 'none';
   document.getElementById('step-pick').style.display = 'none';
@@ -163,8 +213,8 @@ async function showCharacterSheet(characterId) {
 
   const profBonus = calcProfBonus(c.level);
   const maxHP = c.HP || 0;
-  const currentHP = c.currentHP != null ? c.currentHP : maxHP;
-  const tempHP = c.tempHP || 0;
+  const currentHP = hpState ? hpState.currentHP : maxHP;
+  const tempHP = hpState ? (hpState.tempHP || 0) : 0;
 
   if (isFirstLoad) {
     playerState.slotChecks = {};

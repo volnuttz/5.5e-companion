@@ -62,12 +62,28 @@
     </div>
   </div>
 
+  <!-- Dialog Modal -->
+  <div class="dialog-overlay" id="dialog-overlay">
+    <div class="dialog">
+      <div class="dialog-icon" id="dialog-icon"></div>
+      <h3 id="dialog-title"></h3>
+      <p id="dialog-message"></p>
+      <div class="dialog-buttons" id="dialog-buttons"></div>
+    </div>
+  </div>
+
+  <div id="disconnect-banner" style="display:none;position:fixed;top:0;left:0;right:0;background:var(--accent);color:#fff;text-align:center;padding:8px;font-size:0.9rem;z-index:1000;">
+    Disconnected from DM. The session may have ended.
+  </div>
+
   <footer class="srd-footer">
     <p>This app uses content from the <em>Systems Reference Document 5.2</em> by Wizards of the Coast LLC, licensed under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International License</a>.</p>
     <p>This app is not affiliated with, endorsed, sponsored, or approved by Wizards of the Coast LLC.</p>
   </footer>
 
+  <script src="https://unpkg.com/peerjs@1/dist/peerjs.min.js"></script>
   <script src="/js/constants.js"></script>
+  <script src="/js/peer.js"></script>
   <script src="/js/player.js"></script>
 </body>
 </html>

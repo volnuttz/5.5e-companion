@@ -11,8 +11,11 @@
     <div class="header-row" style="display:flex;justify-content:space-between;align-items:center;">
       <h1 style="margin-bottom:0;">5.5e Companion</h1>
       <div style="display:flex;align-items:center;gap:12px;">
-        <span id="dm-name" style="color:var(--text-muted);font-size:0.9rem;"></span>
-        <button class="btn btn-secondary btn-small" id="btn-logout">Logout</button>
+        <span id="peer-status" style="font-size:0.8rem;color:var(--text-muted);"></span>
+        <button class="btn btn-secondary btn-small" id="btn-save-workspace">Save Workspace</button>
+        <input type="file" id="load-workspace-file" accept=".json" style="display:none;">
+        <button class="btn btn-secondary btn-small" onclick="document.getElementById('load-workspace-file').click()">Load Workspace</button>
+        <button class="btn btn-danger btn-small" id="btn-clear-workspace">Clear Workspace</button>
       </div>
     </div>
     <br>
@@ -23,7 +26,7 @@
         <span id="session-status">No active session</span>
       </div>
       <div class="header-row" style="display:flex;gap:8px;">
-        <button class="btn btn-primary" id="btn-new-session">New Session</button>
+        <button class="btn btn-primary" id="btn-new-session">Start Session</button>
         <button class="btn btn-secondary" id="btn-show-qr" style="display:none;">Show QR</button>
         <button class="btn btn-danger btn-small" id="btn-end-session" style="display:none;">End Session</button>
       </div>
@@ -37,7 +40,7 @@
           <button class="modal-close" onclick="document.getElementById('qr-modal').classList.remove('active')">&times;</button>
         </div>
         <div class="qr-container">
-          <img id="qr-img" src="" alt="QR Code">
+          <canvas id="qr-canvas"></canvas>
           <div class="qr-url" id="qr-url"></div>
           <div style="margin-top:12px;font-size:1.2rem;">PIN: <strong id="qr-pin" style="color:var(--accent);letter-spacing:2px;"></strong></div>
         </div>
@@ -381,7 +384,21 @@
     <p>This app is not affiliated with, endorsed, sponsored, or approved by Wizards of the Coast LLC.</p>
   </footer>
 
+  <!-- Dialog Modal -->
+  <div class="dialog-overlay" id="dialog-overlay">
+    <div class="dialog">
+      <div class="dialog-icon" id="dialog-icon"></div>
+      <h3 id="dialog-title"></h3>
+      <p id="dialog-message"></p>
+      <div class="dialog-buttons" id="dialog-buttons"></div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/peerjs@1/dist/peerjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"></script>
   <script src="/js/constants.js"></script>
+  <script src="/js/db.js"></script>
+  <script src="/js/peer.js"></script>
   <script src="/js/dm.js"></script>
 </body>
 </html>

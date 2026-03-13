@@ -812,6 +812,70 @@ th {
   color: var(--accent);
 }
 
+/* ── Dialog modal (replaces alert/confirm) ── */
+.dialog-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.dialog-overlay.active {
+  display: flex;
+}
+
+.dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 32px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lift);
+  animation: modalIn 0.15s ease-out;
+  text-align: center;
+}
+
+.dialog-icon {
+  font-size: 2.4rem;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+
+.dialog-icon.warn { color: var(--accent); }
+.dialog-icon.info { color: var(--gold); }
+.dialog-icon.success { color: var(--hp-high); }
+.dialog-icon.error { color: var(--accent); }
+
+.dialog h3 {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.dialog p {
+  font-family: var(--font-body);
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.dialog-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.dialog-buttons .btn {
+  min-width: 100px;
+}
+
 /* ── Character title (player sheet) ── */
 h1.char-title {
   font-size: 1.2rem;
