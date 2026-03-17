@@ -105,6 +105,19 @@ h3 {
   letter-spacing: 0.5px;
 }
 
+/* Character form section headers — breathing room between sections */
+#char-form h3 {
+  margin-top: 28px;
+  margin-bottom: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+#char-form h3:first-of-type {
+  margin-top: 16px;
+  padding-top: 0;
+  border-top: none;
+}
+
 /* ── Decorative section divider ── */
 .section-divider {
   display: flex;

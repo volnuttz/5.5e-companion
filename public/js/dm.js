@@ -923,13 +923,15 @@ function addEquipmentRow(data) {
   const container = document.getElementById('equipment-list');
   const div = document.createElement('div');
   div.className = 'list-item';
-  div.style.flexWrap = 'wrap';
+  div.style.cssText = 'display:block;padding:10px 12px;';
   div.innerHTML = `
-    <div class="form-group"><label>Name</label><input type="text" class="eq-name" value="${esc(data?.name || '')}"></div>
-    <div class="form-group"><label>Type</label><input type="text" class="eq-type" value="${esc(data?.type || '')}"></div>
-    <div class="form-group"><label>Qty</label><input type="number" class="eq-qty" value="${data?.quantity || 1}" min="0" style="width:60px;"></div>
-    <div class="form-group" style="flex:2;"><label>Description</label><input type="text" class="eq-desc" value="${esc(data?.description || '')}"></div>
-    <button type="button" class="remove-item" onclick="this.parentElement.remove()">&times;</button>
+    <div style="display:grid;grid-template-columns:2fr 1fr 56px auto;gap:6px;align-items:end;margin-bottom:8px;">
+      <div class="form-group" style="margin-bottom:0;"><label>Name</label><input type="text" class="eq-name" value="${esc(data?.name || '')}"></div>
+      <div class="form-group" style="margin-bottom:0;"><label>Type</label><input type="text" class="eq-type" value="${esc(data?.type || '')}"></div>
+      <div class="form-group" style="margin-bottom:0;"><label>Qty</label><input type="number" class="eq-qty" value="${data?.quantity || 1}" min="0"></div>
+      <button type="button" class="remove-item" style="margin-top:20px;" onclick="this.closest('.list-item').remove()">&times;</button>
+    </div>
+    <div class="form-group" style="margin-bottom:0;"><label>Description</label><input type="text" class="eq-desc" value="${esc(data?.description || '')}"></div>
   `;
   container.appendChild(div);
 }
