@@ -19,7 +19,7 @@
       <div class="sidebar-section">
         <h3>Characters</h3>
         <input type="file" id="import-char-file" accept=".toml" style="display:none;" onchange="importCharacterFile(event)">
-        <button class="btn btn-secondary sidebar-btn" onclick="document.getElementById('import-char-file').click()">Import Character (TOML)</button>
+        <button class="btn btn-secondary sidebar-btn" onclick="document.getElementById('import-char-file').click()">Import Character</button>
         <button class="btn btn-secondary sidebar-btn" id="btn-export-all-chars">Export Character</button>
       </div>
       <div class="sidebar-section">
@@ -442,6 +442,7 @@
     }
   </script>
   <script src="https://unpkg.com/peerjs@1/dist/peerjs.min.js"></script>
+  <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"></script>
   <script src="/js/constants.js"></script>
   <script src="/js/db.js"></script>

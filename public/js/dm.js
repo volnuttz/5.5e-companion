@@ -1265,6 +1265,7 @@ function addToBattlefield(idx) {
   relabelBattlefield();
   renderBattlefield();
   saveBattlefield();
+  showToast(`${m.name} added to battlefield`);
 }
 
 function addCustomMonster() {
@@ -1710,6 +1711,16 @@ function showCompendiumDetail(type, item) {
 }
 
 // --- Util ---
+let _toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  clearTimeout(_toastTimer);
+  el.textContent = msg;
+  el.classList.add('show');
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
 function esc(str) {
   const div = document.createElement('div');
   div.textContent = str || '';
@@ -1985,6 +1996,7 @@ function addToTreasures(idx, el) {
   treasurePool.push({ name: e.name, type: e.category || e.type, description: desc, quantity: 1 });
   renderTreasures();
   saveTreasures();
+  showToast(`${e.name} added to treasure`);
 }
 
 function removeFromTreasures(idx) { snapshotTreasureSelections(); treasurePool.splice(idx, 1); renderTreasures(); saveTreasures(); }
@@ -2162,6 +2174,7 @@ function addItemToShop(filteredIdx) {
   shops[_activeShopIdx].items.push({ name: e.name, type: e.category || e.type, description: desc, price, denomination, quantity: -1 });
   renderShops();
   saveShops();
+  showToast(`${e.name} added to shop`);
 }
 
 function addCustomShopItem(shopIdx) {
