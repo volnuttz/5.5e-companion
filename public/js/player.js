@@ -335,6 +335,7 @@ function renderCharacterSheet(c, hpState) {
     </div>
   `;
 
+  document.getElementById('save-prof-bonus-label').textContent = `(Proficiency Bonus: +${profBonus})`;
   document.getElementById('prof-bonus-label').textContent = `(Proficiency Bonus: +${profBonus})`;
 
   document.getElementById('ability-grid').innerHTML = ABILITIES.map(a => {
