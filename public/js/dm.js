@@ -634,6 +634,7 @@ function renderSavingThrows() {
 
 function updateSavingThrows() {
   const profBonus = getProficiencyBonus();
+  document.getElementById('save-prof-bonus-display').textContent = `(Proficiency Bonus: +${profBonus})`;
   const cls = document.getElementById('f-class').value;
   const classSaves = CLASS_SAVING_THROWS[cls] || [];
   ABILITIES.forEach((a, i) => {
