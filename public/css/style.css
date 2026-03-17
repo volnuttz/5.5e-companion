@@ -1532,14 +1532,9 @@ h1.char-title {
     overflow: hidden; /* modal-body handles scrolling */
   }
 
-  /* Character list items: stack vertically */
+  /* Character list items: compact on mobile */
   .char-item {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .char-item-actions {
-    justify-content: flex-end;
+    padding: 10px 12px;
   }
 
   /* Notes textarea height */
@@ -1598,4 +1593,27 @@ h1.char-title {
   #disconnect-banner {
     padding-top: max(8px, env(safe-area-inset-top)) !important;
   }
+}
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 9999;
+  white-space: nowrap;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
