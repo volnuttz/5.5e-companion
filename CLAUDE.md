@@ -26,15 +26,15 @@ data/
   srd-5.2-species-traits.json    10 playable species traits (4.5 KB)
   srd-5.2-feats.json             Feats (3.5 KB)
 public/
-  dm.html                        DM dashboard (451 lines)
-  player.html                    Player character sheet (89 lines)
-  css/style.css                  Parchment theme (1601 lines)
+  dm.html                        DM dashboard (508 lines)
+  player.html                    Player character sheet (108 lines)
+  css/style.css                  Parchment theme (1099 lines)
   img/background_texture.png     Background texture
   js/
     constants.js                 Game tables, class data, skills (141 lines)
     db.js                        IndexedDB abstraction layer (255 lines)
     peer.js                      PeerJS communication layer (373 lines)
-    dm.js                        DM dashboard logic (2311 lines)
+    dm.js                        DM dashboard logic (2302 lines)
     player.js                    Player sheet logic (561 lines)
 ```
 
