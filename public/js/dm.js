@@ -33,6 +33,17 @@ function getAbilityMod(ability) {
   return Math.floor((score - 10) / 2);
 }
 
+function updateAbilityModBadges() {
+  ABILITIES.forEach(a => {
+    const mod = getAbilityMod(a);
+    const el = document.getElementById(`mod-${a}`);
+    if (el) {
+      el.textContent = mod >= 0 ? `+${mod}` : `${mod}`;
+      el.className = 'ability-mod-badge' + (mod > 0 ? ' positive' : mod < 0 ? ' negative' : '');
+    }
+  });
+}
+
 let currentSession = null; // { pin, characters: { id: { claimedBy } } }
 let dmPeer = null; // PeerJS host instance
 let allSpells = [];
@@ -54,6 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   populateDropdowns();
   renderSavingThrows();
   renderSkillInputs();
+  updateAbilityModBadges();
 
   document.getElementById('btn-new-session').addEventListener('click', createSession);
   document.getElementById('btn-show-qr').addEventListener('click', showQR);
@@ -69,11 +81,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('load-workspace-file').addEventListener('change', loadWorkspace);
   document.getElementById('btn-clear-workspace').addEventListener('click', clearWorkspace);
 
-  // Recalculate skills and saving throws when abilities or level change
+  // Recalculate skills, saving throws, and ability mod badges when abilities or level change
   ['STR','DEX','CON','INT','WIS','CHA'].forEach(a => {
     document.getElementById(`f-${a}`).addEventListener('input', () => {
       updateSkillModifiers();
       updateSavingThrows();
+      updateAbilityModBadges();
     });
   });
   document.getElementById('f-level').addEventListener('input', () => {
@@ -424,12 +437,12 @@ function filterFeatures() {
     resultsEl.innerHTML = '<div style="padding:10px;color:var(--text-muted);">No features found.</div>';
   } else {
     resultsEl.innerHTML = filtered.map((f, i) => `
-      <div class="spell-result-item" onclick="selectFeature(${i})" data-idx="${i}" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <div class="search-menu-item" onclick="selectFeature(${i})" data-idx="${i}">
         <div>
           <strong>${esc(f.name)}</strong>
           <span style="color:var(--text-muted);font-size:0.8rem;margin-left:8px;">${esc(f.sourceDetail)}</span>
         </div>
-        <span style="color:var(--text-muted);font-size:0.75rem;">${f.source}</span>
+        <span class="badge badge-sm badge-ghost">${f.source}</span>
       </div>
     `).join('');
     resultsEl._filtered = filtered;
@@ -464,13 +477,15 @@ function addCustomFeature() {
 
 function renderSelectedFeatures() {
   const container = document.getElementById('features-selected');
-  if (selectedFeatures.length === 0) { container.innerHTML = ''; return; }
+  const countEl = document.getElementById('features-count');
+  if (selectedFeatures.length === 0) { container.innerHTML = ''; if (countEl) countEl.style.display = 'none'; return; }
+  if (countEl) { countEl.textContent = selectedFeatures.length; countEl.style.display = ''; }
   container.innerHTML = selectedFeatures.map((f, i) => {
     if (f._editing) {
       return `
     <div class="list-item" style="flex-wrap:wrap;padding:8px 12px;">
-      <div class="form-group" style="flex:1;"><label>Name</label><input type="text" class="feat-name" value="${esc(f.name)}" onchange="updateCustomFeature(${i}, this)" placeholder="Feature name"></div>
-      <div class="form-group" style="flex:2;"><label>Description</label><input type="text" class="feat-desc" value="${esc(f.description)}" onchange="updateCustomFeatureDesc(${i}, this)" placeholder="Description (optional)"></div>
+      <div class="form-group" style="flex:1;margin-bottom:0;"><label>Name</label><input type="text" class="input input-bordered input-sm feat-name" value="${esc(f.name)}" onchange="updateCustomFeature(${i}, this)" placeholder="Feature name"></div>
+      <div class="form-group" style="flex:2;margin-bottom:0;"><label>Description</label><input type="text" class="input input-bordered input-sm feat-desc" value="${esc(f.description)}" onchange="updateCustomFeatureDesc(${i}, this)" placeholder="Description (optional)"></div>
       <button type="button" class="remove-item" onclick="removeFeature(${i})">&times;</button>
     </div>`;
     }
@@ -478,7 +493,7 @@ function renderSelectedFeatures() {
     <div class="list-item" style="flex-wrap:nowrap;align-items:center;padding:8px 12px;">
       <div style="flex:1;">
         <strong>${esc(f.name)}</strong>
-        <span style="color:var(--text-muted);font-size:0.8rem;margin-left:6px;">${esc(f.sourceDetail)}</span>
+        <span class="badge badge-sm badge-ghost" style="margin-left:6px;">${esc(f.sourceDetail)}</span>
         <div style="font-size:0.85rem;color:var(--text-muted);margin-top:2px;">${esc(f.description)}</div>
       </div>
       <button type="button" class="remove-item" onclick="removeFeature(${i})">&times;</button>
@@ -517,14 +532,14 @@ function filterSpells() {
     resultsEl.innerHTML = '<div style="padding:10px;color:var(--text-muted);">No spells found.</div>';
   } else {
     resultsEl.innerHTML = filtered.map(sp => `
-      <div class="spell-result-item" onclick="selectSpell('${esc(sp.name)}')" style="padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <div class="search-menu-item" onclick="selectSpell('${esc(sp.name)}')">
         <div>
           <strong>${esc(sp.name)}</strong>
           <span style="color:var(--text-muted);font-size:0.8rem;margin-left:8px;">
             ${sp.level === 0 ? 'Cantrip' : 'Level ' + sp.level} ${esc(sp.school)}
           </span>
         </div>
-        <span style="color:var(--text-muted);font-size:0.75rem;">${sp.classes.join(', ')}</span>
+        <span class="badge badge-sm badge-ghost">${sp.classes.join(', ')}</span>
       </div>
     `).join('');
   }
@@ -568,7 +583,9 @@ function updateCustomSpellField(idx, field, input) {
 
 function renderSelectedSpells() {
   const container = document.getElementById('spells-selected');
-  if (selectedSpells.length === 0) { container.innerHTML = ''; return; }
+  const countEl = document.getElementById('spells-count');
+  if (selectedSpells.length === 0) { container.innerHTML = ''; if (countEl) countEl.style.display = 'none'; return; }
+  if (countEl) { countEl.textContent = selectedSpells.length; countEl.style.display = ''; }
   const byLevel = {};
   selectedSpells.forEach(sp => {
     const key = sp.level === 0 ? 'Cantrips' : `Level ${sp.level}`;
@@ -583,9 +600,9 @@ function renderSelectedSpells() {
       if (sp._editing) {
         return `
       <div class="list-item" style="flex-wrap:wrap;padding:8px 12px;">
-        <div class="form-group" style="flex:2;"><label>Name</label><input type="text" class="spell-name" value="${esc(sp.name)}" onchange="updateCustomSpellField(${idx}, 'name', this)" placeholder="Spell name"></div>
-        <div class="form-group" style="flex:0 0 70px;"><label>Level</label><input type="number" value="${sp.level}" min="0" max="9" onchange="updateCustomSpellField(${idx}, 'level', this)"></div>
-        <div class="form-group" style="flex:2;"><label>Description</label><input type="text" value="${esc(sp.description)}" onchange="updateCustomSpellField(${idx}, 'description', this)" placeholder="Description (optional)"></div>
+        <div class="form-group" style="flex:2;margin-bottom:0;"><label>Name</label><input type="text" class="input input-bordered input-sm spell-name" value="${esc(sp.name)}" onchange="updateCustomSpellField(${idx}, 'name', this)" placeholder="Spell name"></div>
+        <div class="form-group" style="flex:0 0 70px;margin-bottom:0;"><label>Level</label><input type="number" class="input input-bordered input-sm" value="${sp.level}" min="0" max="9" onchange="updateCustomSpellField(${idx}, 'level', this)"></div>
+        <div class="form-group" style="flex:2;margin-bottom:0;"><label>Description</label><input type="text" class="input input-bordered input-sm" value="${esc(sp.description)}" onchange="updateCustomSpellField(${idx}, 'description', this)" placeholder="Description (optional)"></div>
         <button type="button" class="remove-item" onclick="removeSpellByIndex(${idx})">&times;</button>
       </div>`;
       }
@@ -610,10 +627,10 @@ function renderSavingThrows() {
   container.innerHTML = ABILITIES.map((a, i) => {
     const proficient = classSaves.includes(a);
     return `
-      <div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--bg-input);border-radius:4px;">
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;">
         <span style="color:var(--accent);font-weight:600;min-width:14px;">${proficient ? '*' : ''}</span>
-        <span style="flex:1;font-size:0.9rem;">${a}</span>
-        <span id="f-save-mod-${i}" style="color:var(--gold);font-weight:600;font-size:0.9rem;min-width:28px;text-align:right;">+0</span>
+        <span style="flex:1;font-size:0.9rem;font-weight:500;">${a}</span>
+        <span id="f-save-mod-${i}" class="ability-mod-badge" style="min-width:32px;text-align:center;">+0</span>
       </div>`;
   }).join('');
   updateSavingThrows();
@@ -629,7 +646,10 @@ function updateSavingThrows() {
     const proficient = classSaves.includes(a);
     const total = abilityMod + (proficient ? profBonus : 0);
     const modEl = document.getElementById(`f-save-mod-${i}`);
-    if (modEl) modEl.textContent = total >= 0 ? `+${total}` : `${total}`;
+    if (modEl) {
+      modEl.textContent = total >= 0 ? `+${total}` : `${total}`;
+      modEl.className = 'ability-mod-badge' + (total > 0 ? ' positive' : total < 0 ? ' negative' : '');
+    }
   });
 }
 
@@ -639,11 +659,11 @@ function renderSkillInputs(proficiencies) {
   container.innerHTML = SKILL_ABILITIES.map((s, i) => {
     const checked = proficiencies && proficiencies[i] ? 'checked' : '';
     return `
-      <div style="display:flex;align-items:center;gap:8px;padding:4px 8px;background:var(--bg-input);border-radius:4px;">
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;">
         <input type="checkbox" id="f-skill-prof-${i}" ${checked} onchange="updateSkillModifiers()">
-        <span style="flex:1;font-size:0.9rem;">${s.name}</span>
-        <span style="color:var(--text-muted);font-size:0.75rem;">${s.ability}</span>
-        <span id="f-skill-mod-${i}" style="color:var(--gold);font-weight:600;font-size:0.9rem;min-width:28px;text-align:right;">+0</span>
+        <span style="flex:1;font-size:0.9rem;font-weight:500;">${s.name}</span>
+        <span style="color:var(--text-muted);font-size:0.72rem;">${s.ability}</span>
+        <span id="f-skill-mod-${i}" class="ability-mod-badge" style="min-width:32px;text-align:center;">+0</span>
       </div>`;
   }).join('');
   updateSkillModifiers();
@@ -657,7 +677,10 @@ function updateSkillModifiers() {
     const proficient = document.getElementById(`f-skill-prof-${i}`)?.checked || false;
     const total = abilityMod + (proficient ? profBonus : 0);
     const modEl = document.getElementById(`f-skill-mod-${i}`);
-    if (modEl) modEl.textContent = total >= 0 ? `+${total}` : `${total}`;
+    if (modEl) {
+      modEl.textContent = total >= 0 ? `+${total}` : `${total}`;
+      modEl.className = 'ability-mod-badge' + (total > 0 ? ' positive' : total < 0 ? ' negative' : '');
+    }
   });
 }
 
@@ -713,6 +736,8 @@ async function openCharModal(id) {
   document.getElementById('feature-results').style.display = 'none';
   renderSavingThrows();
   renderSkillInputs();
+  updateAbilityModBadges();
+  updateEquipmentCount();
 
   if (id) {
     document.getElementById('char-modal-title').textContent = 'Edit Character';
@@ -742,6 +767,7 @@ async function openCharModal(id) {
     });
     renderSavingThrows();
     renderSkillInputs(c.skills || []);
+    updateAbilityModBadges();
     if (c.features) {
       c.features.forEach(f => {
         if (typeof f === 'string') {
@@ -873,7 +899,7 @@ function filterEquipment() {
     if (e.cost) detail += ` | ${e.cost}`;
     if (e.properties && e.properties !== '—') detail += ` | ${e.properties}`;
     return `
-      <div class="list-item" style="cursor:pointer;" onclick="selectEquipment(${i}, this)">
+      <div class="search-menu-item" onclick="selectEquipment(${i}, this)">
         <div>
           <strong>${esc(e.name)}</strong>
           <span style="color:var(--text-muted);font-size:0.8rem;margin-left:6px;">${esc(detail)}</span>
@@ -904,14 +930,24 @@ function addEquipmentRow(data) {
   div.style.cssText = 'display:block;padding:10px 12px;';
   div.innerHTML = `
     <div style="display:grid;grid-template-columns:2fr 1fr 56px auto;gap:6px;align-items:end;margin-bottom:8px;">
-      <div class="form-group" style="margin-bottom:0;"><label>Name</label><input type="text" class="eq-name" value="${esc(data?.name || '')}"></div>
-      <div class="form-group" style="margin-bottom:0;"><label>Type</label><input type="text" class="eq-type" value="${esc(data?.type || '')}"></div>
-      <div class="form-group" style="margin-bottom:0;"><label>Qty</label><input type="number" class="eq-qty" value="${data?.quantity || 1}" min="0"></div>
-      <button type="button" class="remove-item" style="margin-top:20px;" onclick="this.closest('.list-item').remove()">&times;</button>
+      <div class="form-group" style="margin-bottom:0;"><label>Name</label><input type="text" class="input input-bordered input-sm eq-name" value="${esc(data?.name || '')}"></div>
+      <div class="form-group" style="margin-bottom:0;"><label>Type</label><input type="text" class="input input-bordered input-sm eq-type" value="${esc(data?.type || '')}"></div>
+      <div class="form-group" style="margin-bottom:0;"><label>Qty</label><input type="number" class="input input-bordered input-sm eq-qty" value="${data?.quantity || 1}" min="0"></div>
+      <button type="button" class="remove-item" style="margin-top:20px;" onclick="this.closest('.list-item').remove();updateEquipmentCount()">&times;</button>
     </div>
-    <div class="form-group" style="margin-bottom:0;"><label>Description</label><input type="text" class="eq-desc" value="${esc(data?.description || '')}"></div>
+    <div class="form-group" style="margin-bottom:0;"><label>Description</label><input type="text" class="input input-bordered input-sm eq-desc" value="${esc(data?.description || '')}"></div>
   `;
   container.appendChild(div);
+  updateEquipmentCount();
+}
+
+function updateEquipmentCount() {
+  const countEl = document.getElementById('equipment-count');
+  const count = document.querySelectorAll('#equipment-list .list-item').length;
+  if (countEl) {
+    if (count > 0) { countEl.textContent = count; countEl.style.display = ''; }
+    else { countEl.style.display = 'none'; }
+  }
 }
 
 function collectEquipment() {
