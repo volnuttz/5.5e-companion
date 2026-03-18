@@ -1,113 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dnd-fantasy">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>5.5e Companion - Dungeon Master</title>
+  <!-- DaisyUI (provides component classes) -->
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet">
+  <!-- Tailwind CDN (provides utility classes + reads DaisyUI theme) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Custom styles: DND-fantasy theme override + game-specific components -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <div class="container">
-    <!-- Sidebar overlay -->
-    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar" aria-label="Menu">
-      <div class="sidebar-header">
-        <span class="sidebar-title">Menu</span>
-        <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">&times;</button>
-      </div>
-      <div class="sidebar-section">
-        <h3>Characters</h3>
-        <input type="file" id="import-char-file" accept=".toml" style="display:none;" onchange="importCharacterFile(event)">
-        <button class="btn btn-secondary sidebar-btn" onclick="document.getElementById('import-char-file').click()">Import Character</button>
-        <button class="btn btn-secondary sidebar-btn" id="btn-export-all-chars">Export Character</button>
-      </div>
-      <div class="sidebar-section">
-        <h3>Workspace</h3>
-        <button class="btn btn-secondary sidebar-btn" id="btn-save-workspace" aria-label="Save Workspace">Save Workspace</button>
-        <input type="file" id="load-workspace-file" accept=".json" style="display:none;">
-        <button class="btn btn-secondary sidebar-btn" aria-label="Load Workspace" onclick="document.getElementById('load-workspace-file').click()">Load Workspace</button>
-        <button class="btn btn-danger sidebar-btn" id="btn-clear-workspace" aria-label="Clear Workspace">Clear Workspace</button>
+  <!-- ===================== SIDEBAR OVERLAY ===================== -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <div class="sidebar" id="sidebar" aria-label="Menu">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Menu</span>
+      <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">&times;</button>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Characters</h3>
+      <input type="file" id="import-char-file" accept=".toml" style="display:none;" onchange="importCharacterFile(event)">
+      <button class="btn btn-sm sidebar-btn" onclick="document.getElementById('import-char-file').click()">
+        ↑ Import Character
+      </button>
+      <button class="btn btn-sm sidebar-btn" id="btn-export-all-chars">
+        ↓ Export Character
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Workspace</h3>
+      <button class="btn btn-sm sidebar-btn" id="btn-save-workspace" aria-label="Save Workspace">
+        💾 Save Workspace
+      </button>
+      <input type="file" id="load-workspace-file" accept=".json" style="display:none;">
+      <button class="btn btn-sm sidebar-btn" aria-label="Load Workspace" onclick="document.getElementById('load-workspace-file').click()">
+        📂 Load Workspace
+      </button>
+      <button class="btn btn-sm sidebar-btn btn-danger" id="btn-clear-workspace" aria-label="Clear Workspace">
+        🗑 Clear Workspace
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================== TOP BAR ===================== -->
+  <div class="top-bar">
+    <button class="hamburger-btn" id="hamburger-btn" onclick="openSidebar()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="top-bar-title">5.5e Companion</span>
+
+    <div class="top-bar-search-wrap">
+      <input type="text" id="top-bar-search" class="top-bar-search" placeholder="Search compendium…" autocomplete="off">
+      <div class="top-bar-dropdown" id="top-bar-dropdown">
+        <div class="top-bar-filters">
+          <select id="compendium-category" class="select select-bordered select-sm bg-base-100 text-sm">
+            <option value="">All</option>
+            <option value="spell">Spells</option>
+            <option value="monster">Monsters</option>
+            <option value="equipment">Equipment</option>
+            <option value="feature">Features</option>
+          </select>
+          <div id="compendium-spell-filters" class="top-bar-filter-row" style="display:none;">
+            <select id="compendium-spell-level" class="select select-bordered select-sm bg-base-100 text-sm">
+              <option value="">All Levels</option>
+              <option value="0">Cantrip</option>
+              <option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option>
+              <option value="4">4th</option><option value="5">5th</option><option value="6">6th</option>
+              <option value="7">7th</option><option value="8">8th</option><option value="9">9th</option>
+            </select>
+            <select id="compendium-spell-class" class="select select-bordered select-sm bg-base-100 text-sm">
+              <option value="">All Classes</option>
+              <option value="bard">Bard</option><option value="cleric">Cleric</option>
+              <option value="druid">Druid</option><option value="paladin">Paladin</option>
+              <option value="ranger">Ranger</option><option value="sorcerer">Sorcerer</option>
+              <option value="warlock">Warlock</option><option value="wizard">Wizard</option>
+            </select>
+          </div>
+          <div id="compendium-monster-filters" class="top-bar-filter-row" style="display:none;">
+            <select id="compendium-monster-type" class="select select-bordered select-sm bg-base-100 text-sm"><option value="">All Types</option></select>
+            <select id="compendium-monster-cr" class="select select-bordered select-sm bg-base-100 text-sm"><option value="">All CR</option></select>
+          </div>
+          <div id="compendium-feature-filters" class="top-bar-filter-row" style="display:none;">
+            <select id="compendium-feature-source" class="select select-bordered select-sm bg-base-100 text-sm">
+              <option value="">All Sources</option>
+              <option value="class">Class Features</option>
+              <option value="species">Species Traits</option>
+              <option value="feat">Feats</option>
+            </select>
+          </div>
+        </div>
+        <div id="compendium-results" class="top-bar-results"></div>
+        <p id="compendium-hint" class="top-bar-hint">Type to search spells, monsters, equipment, features…</p>
       </div>
     </div>
 
-    <div class="top-bar">
-      <button class="hamburger-btn" id="hamburger-btn" onclick="openSidebar()" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </button>
-      <span class="top-bar-title">5.5e Companion</span>
-      <div class="top-bar-search-wrap">
-        <input type="text" id="top-bar-search" class="top-bar-search" placeholder="Search compendium..." autocomplete="off">
-        <div class="top-bar-dropdown" id="top-bar-dropdown">
-          <div class="top-bar-filters">
-            <select id="compendium-category">
-              <option value="">All</option>
-              <option value="spell">Spells</option>
-              <option value="monster">Monsters</option>
-              <option value="equipment">Equipment</option>
-              <option value="feature">Features</option>
-            </select>
-            <div id="compendium-spell-filters" class="top-bar-filter-row" style="display:none;">
-              <select id="compendium-spell-level">
-                <option value="">All Levels</option>
-                <option value="0">Cantrip</option>
-                <option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option>
-                <option value="4">4th</option><option value="5">5th</option><option value="6">6th</option>
-                <option value="7">7th</option><option value="8">8th</option><option value="9">9th</option>
-              </select>
-              <select id="compendium-spell-class">
-                <option value="">All Classes</option>
-                <option value="bard">Bard</option><option value="cleric">Cleric</option>
-                <option value="druid">Druid</option><option value="paladin">Paladin</option>
-                <option value="ranger">Ranger</option><option value="sorcerer">Sorcerer</option>
-                <option value="warlock">Warlock</option><option value="wizard">Wizard</option>
-              </select>
-            </div>
-            <div id="compendium-monster-filters" class="top-bar-filter-row" style="display:none;">
-              <select id="compendium-monster-type"><option value="">All Types</option></select>
-              <select id="compendium-monster-cr"><option value="">All CR</option></select>
-            </div>
-            <div id="compendium-feature-filters" class="top-bar-filter-row" style="display:none;">
-              <select id="compendium-feature-source">
-                <option value="">All Sources</option>
-                <option value="class">Class Features</option>
-                <option value="species">Species Traits</option>
-                <option value="feat">Feats</option>
-              </select>
-            </div>
-          </div>
-          <div id="compendium-results" class="top-bar-results"></div>
-          <p id="compendium-hint" class="top-bar-hint">Type to search spells, monsters, equipment, features...</p>
-        </div>
-      </div>
-      <span id="peer-status" style="font-size:0.8rem;color:#b8a88a;min-width:32px;text-align:right;white-space:nowrap;"></span>
-    </div>
+    <span id="peer-status" class="text-xs opacity-60 whitespace-nowrap min-w-8 text-right" style="color:rgba(240,236,227,0.6);"></span>
+  </div>
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <div class="container">
 
     <!-- Session Bar -->
     <div class="session-bar">
-      <div>
+      <div class="flex items-center gap-2">
         <span id="session-status">No active session</span>
       </div>
-      <div class="header-row" style="display:flex;gap:8px;">
-        <button class="btn btn-primary" id="btn-new-session">Start Session</button>
-        <button class="btn btn-secondary" id="btn-show-qr" style="display:none;">Show QR</button>
+      <div class="flex gap-2">
+        <button class="btn btn-primary btn-small" id="btn-new-session">Start Session</button>
+        <button class="btn btn-secondary btn-small" id="btn-show-qr" style="display:none;">Show QR</button>
         <button class="btn btn-danger btn-small" id="btn-end-session" style="display:none;">End Session</button>
-      </div>
-    </div>
-
-    <!-- QR Modal -->
-    <div class="modal-overlay" id="qr-modal">
-      <div class="modal" style="text-align:center;">
-        <div class="modal-header">
-          <h2>Session QR Code</h2>
-          <button class="modal-close" onclick="document.getElementById('qr-modal').classList.remove('active')">&times;</button>
-        </div>
-        <div class="qr-container modal-body">
-          <canvas id="qr-canvas"></canvas>
-          <div class="qr-url" id="qr-url"></div>
-          <button class="btn btn-secondary btn-small" id="btn-copy-url" style="margin-top:6px;" onclick="copySessionUrl()">Copy URL</button>
-          <div style="margin-top:12px;font-size:1.2rem;">PIN: <strong id="qr-pin" style="color:var(--accent);letter-spacing:2px;"></strong></div>
-        </div>
       </div>
     </div>
 
@@ -120,139 +127,100 @@
       <button class="tab" data-tab="dm-tab-notes">Notes</button>
     </div>
 
-    <!-- Characters Tab -->
+    <!-- ── CHARACTERS TAB ── -->
     <div class="tab-content active" id="dm-tab-characters">
-      <div class="card">
-        <div class="header-row" style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:16px;">
-          <div style="display:flex;gap:6px;">
+      <div class="card card-compact bg-base-100 shadow-md">
+        <div class="card-body">
+          <div class="flex justify-end mb-3">
             <button class="btn btn-primary btn-small" id="btn-add-char">+ New Character</button>
           </div>
+          <div id="char-list"></div>
         </div>
-        <div id="char-list"></div>
       </div>
     </div>
 
-    <!-- Battlefield Tab -->
+    <!-- ── BATTLEFIELD TAB ── -->
     <div class="tab-content" id="dm-tab-battlefield">
-      <div class="card">
-        <div class="header-row" style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px;">
-          <div style="display:flex;gap:8px;">
+      <div class="card card-compact bg-base-100 shadow-md">
+        <div class="card-body">
+          <div class="flex justify-end gap-2 mb-3">
             <button class="btn btn-primary btn-small" id="btn-add-monsters">Add Monsters</button>
             <button class="btn btn-secondary btn-small" onclick="addCustomMonster()">+ Add Custom</button>
           </div>
-        </div>
-        <div id="battlefield-list"></div>
-        <div id="bf-characters-list"></div>
-        <p id="battlefield-empty" style="color:var(--text-muted);">No monsters on the battlefield.</p>
-        <p id="bf-characters-empty" style="color:var(--text-muted);">No active session. Start a session to track character HP.</p>
-      </div>
-    </div>
-
-    <!-- Add Monsters Modal -->
-    <div class="modal-overlay" id="monster-search-modal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>Add Monsters</h2>
-          <button class="modal-close" onclick="document.getElementById('monster-search-modal').classList.remove('active')">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="search-bar" style="display:flex;gap:8px;margin-bottom:10px;">
-            <input type="text" id="monster-search" placeholder="Search monsters..." style="flex:1;padding:8px 12px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-            <select id="monster-type-filter" style="padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-              <option value="">All Types</option>
-            </select>
-            <select id="monster-cr-filter" style="padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-              <option value="">All CR</option>
-            </select>
-          </div>
-          <div id="monster-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
+          <div id="battlefield-list"></div>
+          <div id="bf-characters-list"></div>
+          <p id="battlefield-empty" style="color:var(--text-muted);font-size:0.9rem;">No monsters on the battlefield.</p>
+          <p id="bf-characters-empty" style="color:var(--text-muted);font-size:0.9rem;">No active session. Start a session to track character HP.</p>
         </div>
       </div>
     </div>
 
-    <!-- Treasures Tab -->
+    <!-- ── TREASURES TAB ── -->
     <div class="tab-content" id="dm-tab-treasures">
-      <div class="card">
-        <div class="header-row" style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px;">
-          <div style="display:flex;gap:8px;">
+      <div class="card card-compact bg-base-100 shadow-md">
+        <div class="card-body">
+          <div class="flex justify-end gap-2 mb-3">
             <button class="btn btn-primary btn-small" id="btn-add-items">Add Items</button>
             <button class="btn btn-secondary btn-small" onclick="addCustomTreasure()">+ Add Custom</button>
           </div>
-        </div>
-        <div id="treasure-list"></div>
-        <p id="treasure-empty" style="color:var(--text-muted);">No items in the treasure pool.</p>
-      </div>
-    </div>
-
-    <!-- Add Items Modal -->
-    <div class="modal-overlay" id="treasure-search-modal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>Add Items</h2>
-          <button class="modal-close" onclick="document.getElementById('treasure-search-modal').classList.remove('active')">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="search-bar" style="display:flex;gap:8px;margin-bottom:10px;">
-            <input type="text" id="treasure-search" placeholder="Search equipment..." style="flex:1;padding:8px 12px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-            <select id="treasure-type-filter" style="padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-              <option value="">All Types</option>
-              <option value="Weapon">Weapons</option>
-              <option value="Armor">Armor</option>
-              <option value="Item">Items</option>
-            </select>
-          </div>
-          <div id="treasure-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
+          <div id="treasure-list"></div>
+          <p id="treasure-empty" style="color:var(--text-muted);font-size:0.9rem;">No items in the treasure pool.</p>
         </div>
       </div>
     </div>
 
-    <!-- Shops Tab -->
+    <!-- ── SHOPS TAB ── -->
     <div class="tab-content" id="dm-tab-shops">
-      <div class="card">
-        <div class="header-row" style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px;">
-          <div style="display:flex;gap:8px;align-items:center;">
+      <div class="card card-compact bg-base-100 shadow-md">
+        <div class="card-body">
+          <div class="flex justify-end mb-3">
             <button class="btn btn-primary btn-small" id="btn-create-shop">+ New Shop</button>
           </div>
-        </div>
-        <p id="shops-empty" style="color:var(--text-muted);">No shops created. Click "+ New Shop" to get started.</p>
-        <div id="shops-list"></div>
-      </div>
-    </div>
-
-    <!-- Shop Item Search Modal -->
-    <div class="modal-overlay" id="shop-search-modal">
-      <div class="modal">
-        <div class="modal-header">
-          <h2>Add Items</h2>
-          <button class="modal-close" onclick="document.getElementById('shop-search-modal').classList.remove('active')">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="search-bar" style="display:flex;gap:8px;margin-bottom:10px;">
-            <input type="text" id="shop-item-search" placeholder="Search equipment..." style="flex:1;padding:8px 12px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-            <select id="shop-item-type-filter" style="padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-              <option value="">All Types</option>
-              <option value="Weapon">Weapons</option>
-              <option value="Armor">Armor</option>
-              <option value="Item">Items</option>
-            </select>
-          </div>
-          <div id="shop-item-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
+          <p id="shops-empty" style="color:var(--text-muted);font-size:0.9rem;">No shops created. Click "+ New Shop" to get started.</p>
+          <div id="shops-list"></div>
         </div>
       </div>
     </div>
 
-    <!-- Notes Tab -->
+    <!-- ── NOTES TAB ── -->
     <div class="tab-content" id="dm-tab-notes">
-      <div class="card">
-        <div class="header-row" style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:12px;">
-          <div style="display:flex;gap:8px;align-items:center;">
-            <span id="notes-save-status" style="font-size:0.8rem;color:var(--text-muted);"></span>
+      <div class="card card-compact bg-base-100 shadow-md">
+        <div class="card-body">
+          <div class="flex justify-end mb-3">
+            <span id="notes-save-status" style="font-size:0.8rem;color:var(--text-muted);font-style:italic;"></span>
           </div>
+          <textarea
+            id="notes-editor"
+            placeholder="Write your session notes here…"
+            class="textarea textarea-bordered w-full"
+            style="min-height:500px;font-family:var(--font-body);font-size:1rem;resize:vertical;line-height:1.6;"
+          ></textarea>
         </div>
-        <textarea id="notes-editor" placeholder="Write your notes here..." style="width:100%;min-height:500px;padding:12px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;font-family:'Crimson Text',serif;font-size:1rem;resize:vertical;line-height:1.6;"></textarea>
       </div>
     </div>
 
+  </div><!-- /.container -->
+
+  <!-- ============================================================
+       MODALS (div-based, JS toggles .active class)
+       ============================================================ -->
+
+  <!-- QR Code Modal -->
+  <div class="modal-overlay" id="qr-modal">
+    <div class="modal" style="max-width:420px;text-align:center;">
+      <div class="modal-header">
+        <h2>Session QR Code</h2>
+        <button class="modal-close" onclick="document.getElementById('qr-modal').classList.remove('active')" aria-label="Close">&times;</button>
+      </div>
+      <div class="qr-container modal-body">
+        <canvas id="qr-canvas"></canvas>
+        <div class="qr-url" id="qr-url"></div>
+        <button class="btn btn-secondary btn-small mt-2" id="btn-copy-url" onclick="copySessionUrl()">Copy URL</button>
+        <div class="mt-3 text-lg">
+          PIN: <strong id="qr-pin" style="color:var(--accent);letter-spacing:3px;"></strong>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Compendium Detail Modal -->
@@ -260,7 +228,7 @@
     <div class="modal">
       <div class="modal-header">
         <h2 id="compendium-modal-title"></h2>
-        <button class="modal-close" onclick="document.getElementById('compendium-modal').classList.remove('active')">&times;</button>
+        <button class="modal-close" onclick="document.getElementById('compendium-modal').classList.remove('active')" aria-label="Close">&times;</button>
       </div>
       <div id="compendium-modal-body" class="modal-body"></div>
     </div>
@@ -268,10 +236,10 @@
 
   <!-- Character Edit Modal -->
   <div class="modal-overlay" id="char-modal">
-    <div class="modal">
+    <div class="modal" style="max-width:760px;">
       <div class="modal-header">
         <h2 id="char-modal-title">New Character</h2>
-        <button class="modal-close" onclick="closeCharModal()">&times;</button>
+        <button class="modal-close" onclick="closeCharModal()" aria-label="Close">&times;</button>
       </div>
       <form id="char-form" class="modal-body">
         <input type="hidden" id="char-edit-id">
@@ -280,7 +248,7 @@
         <div class="form-row" style="grid-template-columns:1fr 1fr 1fr 1fr;">
           <div class="form-group">
             <label>Name</label>
-            <input type="text" id="f-name" required>
+            <input type="text" id="f-name" required placeholder="Character name">
           </div>
           <div class="form-group">
             <label>Class</label>
@@ -295,16 +263,17 @@
             <input type="number" id="f-level" value="1" min="1" max="20" required>
           </div>
         </div>
+
         <div class="form-group">
           <label>Background</label>
           <select id="f-background"></select>
-          <input type="text" id="f-background-custom" placeholder="Enter background..." style="display:none;margin-top:6px;">
+          <input type="text" id="f-background-custom" placeholder="Enter background…" style="display:none;margin-top:6px;">
         </div>
 
         <!-- Combat Stats -->
         <div class="form-row" style="grid-template-columns:1fr 1fr;">
           <div class="form-group">
-            <label>HP</label>
+            <label>Max HP</label>
             <input type="number" id="f-hp" value="10" min="0" required>
           </div>
           <div class="form-group">
@@ -314,8 +283,8 @@
         </div>
 
         <!-- Ability Scores -->
-        <h3>Ability Scores</h3>
-        <div class="form-row stat-row" style="grid-template-columns:repeat(6,1fr);">
+        <h3 class="mt-2 mb-2">Ability Scores</h3>
+        <div class="form-row stat-row">
           <div class="form-group"><label>STR</label><input type="number" id="f-STR" value="10"></div>
           <div class="form-group"><label>DEX</label><input type="number" id="f-DEX" value="10"></div>
           <div class="form-group"><label>CON</label><input type="number" id="f-CON" value="10"></div>
@@ -325,18 +294,18 @@
         </div>
 
         <!-- Saving Throws -->
-        <h3>Saving Throws <span id="save-prof-bonus-display" style="font-size:0.85rem;color:var(--text-muted);font-weight:normal;"></span></h3>
-        <div id="saving-throws-inputs" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;"></div>
+        <h3 class="mt-2 mb-1">Saving Throws <span id="save-prof-bonus-display" style="font-size:0.82rem;color:var(--text-muted);font-weight:normal;font-family:var(--font-body);"></span></h3>
+        <div id="saving-throws-inputs" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:1rem;"></div>
 
         <!-- Skills -->
-        <h3>Skills <span id="prof-bonus-display" style="font-size:0.85rem;color:var(--text-muted);font-weight:normal;">(Proficiency Bonus: +2)</span></h3>
-        <div id="skills-inputs" style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px;"></div>
+        <h3 class="mt-2 mb-1">Skills <span id="prof-bonus-display" style="font-size:0.82rem;color:var(--text-muted);font-weight:normal;font-family:var(--font-body);">(Proficiency Bonus: +2)</span></h3>
+        <div id="skills-inputs" style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px;margin-bottom:1rem;"></div>
 
         <!-- Features -->
-        <h3>Features</h3>
-        <div class="search-bar" style="display:flex;gap:8px;margin-bottom:10px;">
-          <input type="text" id="feature-search" placeholder="Search features..." style="flex:1;padding:8px 12px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-          <select id="feature-source-filter" style="padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
+        <h3 class="mt-2 mb-2">Features</h3>
+        <div class="search-bar">
+          <input type="text" id="feature-search" placeholder="Search features…">
+          <select id="feature-source-filter">
             <option value="">All Sources</option>
             <option value="class">Class Features</option>
             <option value="species">Species Traits</option>
@@ -344,14 +313,14 @@
           </select>
         </div>
         <div id="feature-results" class="list-section" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
-        <div id="features-selected" class="list-section" style="margin-top:10px;"></div>
-        <button type="button" class="btn btn-secondary btn-small" onclick="addCustomFeature()">+ Add Custom</button>
+        <div id="features-selected" class="list-section mt-2"></div>
+        <button type="button" class="btn btn-secondary btn-small mt-2" onclick="addCustomFeature()">+ Add Custom</button>
 
         <!-- Equipment -->
-        <h3>Equipment</h3>
-        <div class="search-bar" style="display:flex;gap:8px;margin-bottom:10px;">
-          <input type="text" id="equip-search" placeholder="Search items..." style="flex:1;padding:8px 12px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-          <select id="equip-type-filter" style="padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
+        <h3 class="mt-4 mb-2">Equipment</h3>
+        <div class="search-bar">
+          <input type="text" id="equip-search" placeholder="Search items…">
+          <select id="equip-type-filter">
             <option value="">All Types</option>
             <option value="Weapon">Weapons</option>
             <option value="Armor">Armor</option>
@@ -360,20 +329,20 @@
         </div>
         <div id="equip-results" class="list-section" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
         <div id="equipment-list" class="list-section"></div>
-        <button type="button" class="btn btn-secondary btn-small" onclick="addEquipmentRow()">+ Add Custom</button>
+        <button type="button" class="btn btn-secondary btn-small mt-2" onclick="addEquipmentRow()">+ Add Custom</button>
 
         <!-- Spells -->
-        <h3>Spells</h3>
-        <div class="search-bar" style="display:flex;gap:8px;margin-bottom:10px;">
-          <input type="text" id="spell-search" placeholder="Search spells..." style="flex:1;padding:8px 12px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
-          <select id="spell-level-filter" style="padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
+        <h3 class="mt-4 mb-2">Spells</h3>
+        <div class="search-bar">
+          <input type="text" id="spell-search" placeholder="Search spells…">
+          <select id="spell-level-filter">
             <option value="">All Levels</option>
             <option value="0">Cantrip</option>
             <option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option>
             <option value="4">4th</option><option value="5">5th</option><option value="6">6th</option>
             <option value="7">7th</option><option value="8">8th</option><option value="9">9th</option>
           </select>
-          <select id="spell-class-filter" style="padding:8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:6px;">
+          <select id="spell-class-filter">
             <option value="">All Classes</option>
             <option value="bard">Bard</option><option value="cleric">Cleric</option>
             <option value="druid">Druid</option><option value="paladin">Paladin</option>
@@ -382,11 +351,11 @@
           </select>
         </div>
         <div id="spell-results" class="list-section" style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
-        <div id="spells-selected" class="list-section" style="margin-top:10px;"></div>
-        <button type="button" class="btn btn-secondary btn-small" onclick="addCustomSpell()">+ Add Custom</button>
+        <div id="spells-selected" class="list-section mt-2"></div>
+        <button type="button" class="btn btn-secondary btn-small mt-2" onclick="addCustomSpell()">+ Add Custom</button>
 
         <!-- Currency -->
-        <h3>Currency</h3>
+        <h3 class="mt-4 mb-2">Currency</h3>
         <div class="currency-row">
           <div class="form-group"><label>CP</label><input type="number" id="f-cp" value="0" min="0"></div>
           <div class="form-group"><label>SP</label><input type="number" id="f-sp" value="0" min="0"></div>
@@ -395,11 +364,30 @@
           <div class="form-group"><label>PP</label><input type="number" id="f-pp" value="0" min="0"></div>
         </div>
 
-        <div class="header-row" style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;">
+        <!-- Form Actions -->
+        <div class="flex gap-2 justify-end mt-6">
           <button type="button" class="btn btn-secondary" onclick="closeCharModal()">Cancel</button>
           <button type="submit" class="btn btn-primary">Save Character</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Add Monsters Modal -->
+  <div class="modal-overlay" id="monster-search-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add Monsters</h2>
+        <button class="modal-close" onclick="document.getElementById('monster-search-modal').classList.remove('active')" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="search-bar">
+          <input type="text" id="monster-search" placeholder="Search monsters…">
+          <select id="monster-type-filter"><option value="">All Types</option></select>
+          <select id="monster-cr-filter"><option value="">All CR</option></select>
+        </div>
+        <div id="monster-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
+      </div>
     </div>
   </div>
 
@@ -408,18 +396,57 @@
     <div class="modal">
       <div class="modal-header">
         <h2 id="monster-modal-title">Monster</h2>
-        <button class="modal-close" onclick="document.getElementById('monster-modal').classList.remove('active')">&times;</button>
+        <button class="modal-close" onclick="document.getElementById('monster-modal').classList.remove('active')" aria-label="Close">&times;</button>
       </div>
       <div id="monster-stat-block" class="modal-body"></div>
     </div>
   </div>
 
-  <footer class="srd-footer">
-    <p>This app uses content from the <em>Systems Reference Document 5.2</em> by Wizards of the Coast LLC, licensed under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International License</a>.</p>
-    <p>This app is not affiliated with, endorsed, sponsored, or approved by Wizards of the Coast LLC.</p>
-  </footer>
+  <!-- Add Items (Treasure) Modal -->
+  <div class="modal-overlay" id="treasure-search-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add Items</h2>
+        <button class="modal-close" onclick="document.getElementById('treasure-search-modal').classList.remove('active')" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="search-bar">
+          <input type="text" id="treasure-search" placeholder="Search equipment…">
+          <select id="treasure-type-filter">
+            <option value="">All Types</option>
+            <option value="Weapon">Weapons</option>
+            <option value="Armor">Armor</option>
+            <option value="Item">Items</option>
+          </select>
+        </div>
+        <div id="treasure-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
+      </div>
+    </div>
+  </div>
 
-  <!-- Dialog Modal -->
+  <!-- Shop Item Search Modal -->
+  <div class="modal-overlay" id="shop-search-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add Shop Items</h2>
+        <button class="modal-close" onclick="document.getElementById('shop-search-modal').classList.remove('active')" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="search-bar">
+          <input type="text" id="shop-item-search" placeholder="Search equipment…">
+          <select id="shop-item-type-filter">
+            <option value="">All Types</option>
+            <option value="Weapon">Weapons</option>
+            <option value="Armor">Armor</option>
+            <option value="Item">Items</option>
+          </select>
+        </div>
+        <div id="shop-item-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generic Dialog Modal (alert / confirm / prompt) -->
   <div class="dialog-overlay" id="dialog-overlay">
     <div class="dialog">
       <div class="dialog-icon" id="dialog-icon"></div>
@@ -429,6 +456,16 @@
     </div>
   </div>
 
+  <!-- SRD Footer -->
+  <footer class="srd-footer">
+    <p>This app uses content from the <em>Systems Reference Document 5.2</em> by Wizards of the Coast LLC, licensed under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International License</a>.</p>
+    <p>This app is not affiliated with, endorsed, sponsored, or approved by Wizards of the Coast LLC.</p>
+  </footer>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Sidebar JS -->
   <script>
     function openSidebar() {
       document.getElementById('sidebar').classList.add('open');
@@ -439,9 +476,12 @@
       document.getElementById('sidebar-overlay').classList.remove('active');
     }
   </script>
+
+  <!-- External libs -->
   <script src="https://unpkg.com/peerjs@1/dist/peerjs.min.js"></script>
-  <div class="toast" id="toast"></div>
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"></script>
+
+  <!-- App scripts -->
   <script src="/js/constants.js"></script>
   <script src="/js/db.js"></script>
   <script src="/js/peer.js"></script>
