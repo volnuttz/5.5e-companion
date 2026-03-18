@@ -1,15 +1,12 @@
 // --- Dialog helper ---
 function dialogAlert(message, title, type = 'info') {
-  const icons = { warn: '\u26A0', info: '\u2139\uFE0F', success: '\u2714', error: '\u2718' };
   const overlay = document.getElementById('dialog-overlay');
-  document.getElementById('dialog-icon').textContent = icons[type] || icons.info;
-  document.getElementById('dialog-icon').className = 'dialog-icon ' + type;
   document.getElementById('dialog-title').textContent = title || 'Notice';
   document.getElementById('dialog-message').textContent = message;
   const btns = document.getElementById('dialog-buttons');
   btns.innerHTML = '<button class="btn btn-primary btn-small">OK</button>';
-  btns.querySelector('button').addEventListener('click', () => overlay.classList.remove('active'));
-  overlay.classList.add('active');
+  btns.querySelector('button').addEventListener('click', () => overlay.close());
+  overlay.showModal();
 }
 
 const SKILL_ABILITIES = [
@@ -57,13 +54,15 @@ function showBanner(text, isError = false) {
   const banner = document.getElementById('disconnect-banner');
   if (!banner) return;
   banner.textContent = text;
-  banner.style.background = isError ? 'var(--accent)' : '#555';
-  banner.style.display = 'block';
+  banner.className = isError
+    ? 'alert alert-error fixed top-0 left-0 right-0 z-[1000] rounded-none justify-center py-2 text-sm'
+    : 'alert alert-warning fixed top-0 left-0 right-0 z-[1000] rounded-none justify-center py-2 text-sm';
+  banner.style.display = 'flex';
 }
 
 function hideBanner() {
   const banner = document.getElementById('disconnect-banner');
-  if (banner) banner.style.display = 'none';
+  if (banner) { banner.style.display = 'none'; }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -75,9 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Tab switching
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('tab-active'));
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
+      tab.classList.add('tab-active');
       document.getElementById(tab.dataset.tab).classList.add('active');
     });
   });
