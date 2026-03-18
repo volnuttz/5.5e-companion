@@ -1,9 +1,12 @@
+const http = require('http');
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { ExpressPeerServer } = require('peer');
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
 const DATA_DIR = path.join(__dirname, 'data');
@@ -17,6 +20,10 @@ const srdData = {
   monsters: (() => { try { return JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'srd-5.2-monsters.json'), 'utf-8')); } catch(e) { return []; } })(),
   classFeatures: (() => { try { return JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'srd-5.2-class-features.json'), 'utf-8')); } catch(e) { return {}; } })()
 };
+
+// Self-hosted PeerJS signaling server
+const peerServer = ExpressPeerServer(server, { path: '/' });
+app.use('/peerjs', peerServer);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
@@ -48,7 +55,7 @@ function getLocalIP() {
   return 'localhost';
 }
 
-app.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', () => {
   const ip = getLocalIP();
   console.log(`DnD App running at:`);
   console.log(`  Local:   http://localhost:${PORT}`);

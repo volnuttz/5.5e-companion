@@ -3,6 +3,14 @@
 
 const DND_PEER_PREFIX = 'dnd-companion-';
 
+// Self-hosted PeerJS server config — avoids the deprecated 0.peerjs.com default
+const PEER_SERVER_CONFIG = {
+  host: window.location.hostname,
+  port: window.location.port ? parseInt(window.location.port) : (window.location.protocol === 'https:' ? 443 : 80),
+  path: '/peerjs',
+  secure: window.location.protocol === 'https:'
+};
+
 const STALE_CONNECTION_TIMEOUT = 60000; // 60s without ping = stale
 const STALE_CHECK_INTERVAL = 15000;     // check every 15s
 
@@ -27,7 +35,7 @@ function createDMPeer(roomId) {
   }
 
   function _tryInit(resolve, reject, attempt) {
-    peer = new Peer(peerId);
+    peer = new Peer(peerId, PEER_SERVER_CONFIG);
     peer.on('open', (id) => {
       console.log('[Peer] DM peer open:', id);
       _attachPeerEvents();
@@ -218,7 +226,7 @@ function createPlayerPeer(roomId) {
 
   function _createPeer(resolve, reject) {
     if (peer && !peer.destroyed) peer.destroy();
-    peer = new Peer();
+    peer = new Peer(undefined, PEER_SERVER_CONFIG);
 
     peer.on('open', () => {
       _openConnection(resolve, reject);
