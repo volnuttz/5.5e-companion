@@ -181,23 +181,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // --- Dialog helpers (replaces alert/confirm) ---
-const DIALOG_ICONS = {
-  warn: '\u26A0',
-  info: '\u2139\uFE0F',
-  success: '\u2714',
-  error: '\u2718'
-};
-
 function showDialog({ title, message, type = 'info', buttons = ['OK'] }) {
   return new Promise(resolve => {
     const overlay = document.getElementById('dialog-overlay');
-    const iconEl = document.getElementById('dialog-icon');
     const titleEl = document.getElementById('dialog-title');
     const msgEl = document.getElementById('dialog-message');
     const btnsEl = document.getElementById('dialog-buttons');
 
-    iconEl.textContent = DIALOG_ICONS[type] || DIALOG_ICONS.info;
-    iconEl.className = 'dialog-icon ' + type;
     titleEl.textContent = title || '';
     msgEl.textContent = message || '';
 
@@ -233,13 +223,10 @@ function dialogConfirm(message, title) {
 function dialogPrompt(message, title, defaultValue) {
   return new Promise(resolve => {
     const overlay = document.getElementById('dialog-overlay');
-    const iconEl = document.getElementById('dialog-icon');
     const titleEl = document.getElementById('dialog-title');
     const msgEl = document.getElementById('dialog-message');
     const btnsEl = document.getElementById('dialog-buttons');
 
-    iconEl.textContent = DIALOG_ICONS.info;
-    iconEl.className = 'dialog-icon info';
     titleEl.textContent = title || 'Input';
     msgEl.textContent = message || '';
 
@@ -1875,12 +1862,9 @@ async function showExportCharacterPicker() {
   if (!chars.length) { dialogAlert('No characters to export.', 'Export', 'info'); return; }
   if (chars.length === 1) { exportCharacter(chars[0]._id); closeSidebar(); return; }
   const overlay = document.getElementById('dialog-overlay');
-  const iconEl = document.getElementById('dialog-icon');
   const titleEl = document.getElementById('dialog-title');
   const msgEl = document.getElementById('dialog-message');
   const btnsEl = document.getElementById('dialog-buttons');
-  iconEl.textContent = DIALOG_ICONS.info;
-  iconEl.className = 'dialog-icon info';
   titleEl.textContent = 'Export Character';
   msgEl.textContent = 'Select a character to export:';
   btnsEl.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px;width:100%;">

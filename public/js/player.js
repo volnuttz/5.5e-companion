@@ -1,9 +1,6 @@
 // --- Dialog helper ---
 function dialogAlert(message, title, type = 'info') {
-  const icons = { warn: '\u26A0', info: '\u2139\uFE0F', success: '\u2714', error: '\u2718' };
   const overlay = document.getElementById('dialog-overlay');
-  document.getElementById('dialog-icon').textContent = icons[type] || icons.info;
-  document.getElementById('dialog-icon').className = 'dialog-icon ' + type;
   document.getElementById('dialog-title').textContent = title || 'Notice';
   document.getElementById('dialog-message').textContent = message;
   const btns = document.getElementById('dialog-buttons');

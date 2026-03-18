@@ -615,12 +615,6 @@ input[type="checkbox"]:hover {
   animation: modalIn 0.18s ease;
 }
 
-.dialog-icon {
-  font-size: 2rem;
-  margin-bottom: 0.625rem;
-  display: block;
-  line-height: 1;
-}
 .dialog h3 {
   font-family: var(--font-heading);
   color: hsl(0, 0%, 17%);
@@ -1150,14 +1144,6 @@ input[type="checkbox"]:hover {
 }
 .srd-footer a { color: hsl(0, 0%, 30%); text-decoration: none; }
 .srd-footer a:hover { color: hsl(0, 0%, 10%); }
-
-/* ============================================================
-   DIALOG ICON COLORS (JS sets .dialog-icon.warn / .info / etc.)
-   ============================================================ */
-.dialog-icon.warn  { color: hsl(38, 92%, 44%); }
-.dialog-icon.error { color: hsl(var(--er)); }
-.dialog-icon.success { color: hsl(var(--su)); }
-.dialog-icon.info  { color: hsl(var(--in)); }
 
 /* ============================================================
    CHAR TITLE (player.js adds .char-title to h1 after claim)
