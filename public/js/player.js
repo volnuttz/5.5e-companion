@@ -380,10 +380,22 @@ function renderCharacterSheet(c, hpState) {
   }).join('');
 
   const features = c.features || [];
-  document.getElementById('features-list').innerHTML = features.map(f => {
-    if (typeof f === 'string') return `<li>${esc(f)}</li>`;
-    return `<li><strong>${esc(f.name)}</strong>${f.sourceDetail ? ' <span style="color:var(--text-muted);font-size:0.8rem;">(' + esc(f.sourceDetail) + ')</span>' : ''}${f.description ? '<br><span style="font-size:0.9rem;color:var(--text-muted);">' + esc(f.description) + '</span>' : ''}</li>`;
-  }).join('');
+  document.getElementById('features-list').innerHTML = features.length === 0
+    ? '<p style="color:var(--text-muted)">No features.</p>'
+    : `<div style="border:1px solid var(--border);border-radius:6px;overflow:hidden;">${
+        features.map(f => {
+          const name = typeof f === 'string' ? f : f.name;
+          const sourceDetail = typeof f === 'string' ? '' : (f.sourceDetail || '');
+          const description = typeof f === 'string' ? '' : (f.description || '');
+          return `<div class="list-item" style="flex-wrap:wrap;">
+            <div style="flex:1;">
+              <strong>${esc(name)}</strong>
+              ${sourceDetail ? `<span class="badge badge-sm badge-ghost" style="margin-left:6px;">${esc(sourceDetail)}</span>` : ''}
+              ${description ? `<div style="font-size:0.85rem;color:var(--text-muted);margin-top:2px;">${esc(description)}</div>` : ''}
+            </div>
+          </div>`;
+        }).join('')
+      }</div>`;
 
   // --- Currency (read-only, managed by DM) ---
   const cur = c.currency || {};

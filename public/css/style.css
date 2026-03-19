@@ -688,7 +688,7 @@ input[type="checkbox"]:not(.collapse > input):hover {
   color: var(--text-muted);
 }
 .char-form-collapse .collapse-content {
-  padding: 0 1rem 1rem;
+  padding: 0.75rem 1rem 1rem;
   background: var(--bg-card);
   border-top: 1px solid var(--border);
 }
@@ -1024,7 +1024,6 @@ input[type="checkbox"]:not(.collapse > input):hover {
   padding-left: 0;
   margin-bottom: 1rem;
 }
-.features-list li { margin-bottom: 0.5rem; font-size: 0.95rem; line-height: 1.5; }
 
 /* ============================================================
    SPELL SLOT BUBBLES (player sheet)
