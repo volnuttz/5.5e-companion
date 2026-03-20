@@ -296,7 +296,11 @@
         <div class="form-row" style="grid-template-columns:1fr 1fr;">
           <div class="form-group">
             <label>Max HP</label>
-            <input type="number" id="f-hp" class="input input-bordered w-full" value="10" min="0" required>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="number" id="f-hp" class="input input-bordered w-full" value="10" min="0" required>
+              <button type="button" class="btn btn-secondary btn-small" id="btn-calc-hp" title="Auto-calculate HP" style="white-space:nowrap;font-size:0.75rem;padding:0.3rem 0.6rem;">Calc HP</button>
+            </div>
+            <span id="hp-breakdown" style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;"></span>
           </div>
           <div class="form-group">
             <label>AC</label>
@@ -305,6 +309,16 @@
         </div>
 
         <div class="divider">Ability Scores</div>
+
+        <!-- Ability Score Method -->
+        <div id="ability-method-bar" style="display:flex;gap:6px;margin-bottom:0.75rem;flex-wrap:wrap;align-items:center;">
+          <span style="font-size:0.75rem;color:var(--text-muted);font-family:var(--font-heading);letter-spacing:0.04em;">METHOD:</span>
+          <button type="button" class="btn btn-secondary btn-small ability-method-btn" data-method="manual" style="font-size:0.72rem;padding:0.2rem 0.6rem;min-height:1.75rem;">Manual</button>
+          <button type="button" class="btn btn-secondary btn-small ability-method-btn" data-method="standard" style="font-size:0.72rem;padding:0.2rem 0.6rem;min-height:1.75rem;">Standard Array</button>
+          <button type="button" class="btn btn-secondary btn-small ability-method-btn" data-method="pointbuy" style="font-size:0.72rem;padding:0.2rem 0.6rem;min-height:1.75rem;">Point Buy</button>
+          <button type="button" class="btn btn-secondary btn-small ability-method-btn" data-method="roll" style="font-size:0.72rem;padding:0.2rem 0.6rem;min-height:1.75rem;">Roll 4d6</button>
+        </div>
+        <div id="ability-method-info" style="display:none;margin-bottom:0.75rem;padding:0.5rem 0.75rem;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;font-size:0.85rem;"></div>
 
         <!-- Ability Scores -->
         <div class="form-row stat-row">
@@ -447,6 +461,18 @@
           <button type="submit" class="btn btn-primary">Save Character</button>
         </div>
       </form>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+
+  <!-- Level Up Modal -->
+  <dialog id="levelup-modal" class="modal">
+    <div class="modal-box" style="max-width:600px;">
+      <div class="modal-header">
+        <h2 id="levelup-title">Level Up</h2>
+        <button class="btn btn-sm btn-circle btn-ghost" onclick="document.getElementById('levelup-modal').close()">✕</button>
+      </div>
+      <div class="modal-body" id="levelup-body"></div>
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
