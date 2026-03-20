@@ -1250,6 +1250,20 @@ input[type="checkbox"]:not(.collapse > input):hover {
   .card-body { padding: 0.75rem !important; }
 }
 
+/* ============================================================
+   ABILITY METHOD BAR — active state
+   ============================================================ */
+.ability-method-btn.active {
+  background: hsl(0, 0%, 25%) !important;
+  color: #fff !important;
+  border-color: hsl(0, 0%, 18%) !important;
+}
+
+/* ============================================================
+   LEVEL UP MODAL
+   ============================================================ */
+#levelup-modal .modal-box { max-width: 600px; }
+
 /* safe-area insets for notched phones */
 @supports (padding: env(safe-area-inset-top)) {
   .navbar { padding-top: max(0.5rem, env(safe-area-inset-top)); }

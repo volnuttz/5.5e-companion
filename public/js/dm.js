@@ -92,13 +92,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('f-level').addEventListener('input', () => {
     updateSkillModifiers();
     updateSavingThrows();
+    updateHPBreakdown();
+    applySmartSpellFilters();
+    // Auto-populate features when level changes (only for new characters)
+    if (!document.getElementById('char-edit-id').value) autoPopulateFeatures();
   });
 
   document.getElementById('f-class').addEventListener('change', () => {
     renderSavingThrows();
     autoSetHP();
+    updateHPBreakdown();
+    applySmartSpellFilters();
+    // Auto-populate features when class changes (only for new characters)
+    if (!document.getElementById('char-edit-id').value) autoPopulateFeatures();
   });
-  document.getElementById('f-CON').addEventListener('input', autoSetHP);
+  document.getElementById('f-species').addEventListener('change', () => {
+    // Auto-populate features when species changes (only for new characters)
+    if (!document.getElementById('char-edit-id').value) autoPopulateFeatures();
+  });
+  document.getElementById('f-CON').addEventListener('input', () => {
+    autoSetHP();
+    updateHPBreakdown();
+    if (abilityMethod === 'pointbuy') updatePointBuyDisplay();
+    if (abilityMethod === 'standard') renderStandardArrayPool();
+  });
+  document.getElementById('btn-calc-hp').addEventListener('click', calcFullHP);
+
+  // Ability score method buttons + point buy / standard array tracking
+  initAbilityMethods();
+  ['STR','DEX','INT','WIS','CHA'].forEach(a => {
+    document.getElementById(`f-${a}`).addEventListener('input', () => {
+      if (abilityMethod === 'pointbuy') updatePointBuyDisplay();
+      if (abilityMethod === 'standard') renderStandardArrayPool();
+    });
+  });
 
   // Feature search
   document.getElementById('feature-search').addEventListener('input', filterFeatures);
@@ -340,7 +367,7 @@ function populateDropdowns() {
   });
 }
 
-// --- Auto HP for level 1 ---
+// --- Auto HP calculation ---
 function autoSetHP() {
   const level = parseInt(document.getElementById('f-level').value) || 1;
   if (level !== 1) return;
@@ -348,7 +375,380 @@ function autoSetHP() {
   if (!cls || !HIT_DIE[cls]) return;
   const conScore = parseInt(document.getElementById('f-CON').value) || 10;
   const conMod = Math.floor((conScore - 10) / 2);
-  document.getElementById('f-hp').value = Math.max(1, HIT_DIE[cls] + conMod);
+  const hp = Math.max(1, HIT_DIE[cls] + conMod);
+  document.getElementById('f-hp').value = hp;
+  updateHPBreakdown();
+}
+
+function calcFullHP() {
+  const cls = document.getElementById('f-class').value;
+  const level = parseInt(document.getElementById('f-level').value) || 1;
+  if (!cls || !HIT_DIE[cls]) return;
+  const conScore = parseInt(document.getElementById('f-CON').value) || 10;
+  const conMod = Math.floor((conScore - 10) / 2);
+  const hitDie = HIT_DIE[cls];
+  // Level 1: max hit die + CON mod. Levels 2+: average (die/2 + 1) + CON mod each
+  const avg = Math.floor(hitDie / 2) + 1;
+  const hp = Math.max(1, hitDie + conMod + (level - 1) * (avg + conMod));
+  document.getElementById('f-hp').value = hp;
+  updateHPBreakdown();
+}
+
+function updateHPBreakdown() {
+  const el = document.getElementById('hp-breakdown');
+  if (!el) return;
+  const cls = document.getElementById('f-class').value;
+  const level = parseInt(document.getElementById('f-level').value) || 1;
+  if (!cls || !HIT_DIE[cls]) { el.textContent = ''; return; }
+  const conScore = parseInt(document.getElementById('f-CON').value) || 10;
+  const conMod = Math.floor((conScore - 10) / 2);
+  const hitDie = HIT_DIE[cls];
+  const avg = Math.floor(hitDie / 2) + 1;
+  const conSign = conMod >= 0 ? '+' : '';
+  let text = `L1: ${hitDie}${conSign}${conMod}`;
+  if (level > 1) text += ` | L2-${level}: ${level - 1}×(${avg}${conSign}${conMod})`;
+  const expected = Math.max(1, hitDie + conMod + (level - 1) * (avg + conMod));
+  text += ` = ${expected} (avg)`;
+  el.textContent = text;
+}
+
+// --- Ability Score Methods ---
+let abilityMethod = 'manual';
+const STANDARD_ARRAY = [15, 14, 13, 12, 10, 8];
+const POINT_BUY_COSTS = { 8:0, 9:1, 10:2, 11:3, 12:4, 13:5, 14:7, 15:9 };
+const POINT_BUY_TOTAL = 27;
+
+function initAbilityMethods() {
+  document.querySelectorAll('.ability-method-btn').forEach(btn => {
+    btn.addEventListener('click', () => setAbilityMethod(btn.dataset.method));
+  });
+}
+
+function setAbilityMethod(method) {
+  abilityMethod = method;
+  document.querySelectorAll('.ability-method-btn').forEach(btn => {
+    if (btn.dataset.method === method) {
+      btn.style.background = 'hsl(0, 0%, 25%)';
+      btn.style.color = '#fff';
+      btn.style.borderColor = 'hsl(0, 0%, 18%)';
+    } else {
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }
+  });
+  const infoEl = document.getElementById('ability-method-info');
+  if (method === 'manual') {
+    infoEl.style.display = 'none';
+  } else if (method === 'standard') {
+    infoEl.style.display = '';
+    infoEl.innerHTML = `<strong>Standard Array:</strong> Assign 15, 14, 13, 12, 10, 8 to your abilities.<br>
+      <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;" id="standard-array-pool"></div>`;
+    renderStandardArrayPool();
+  } else if (method === 'pointbuy') {
+    infoEl.style.display = '';
+    updatePointBuyDisplay();
+  } else if (method === 'roll') {
+    infoEl.style.display = '';
+    infoEl.innerHTML = `<strong>Roll 4d6 Drop Lowest:</strong> <button type="button" class="btn btn-primary btn-small" style="font-size:0.72rem;padding:0.2rem 0.6rem;min-height:1.75rem;" onclick="rollAbilityScores()">Roll All</button>
+      <span id="roll-results" style="margin-left:8px;"></span>`;
+  }
+}
+
+function renderStandardArrayPool() {
+  const pool = document.getElementById('standard-array-pool');
+  if (!pool) return;
+  const assigned = {};
+  ABILITIES.forEach(a => {
+    const val = parseInt(document.getElementById(`f-${a}`).value) || 10;
+    if (STANDARD_ARRAY.includes(val)) assigned[a] = val;
+  });
+  const used = Object.values(assigned);
+  const remaining = [...STANDARD_ARRAY];
+  used.forEach(v => { const idx = remaining.indexOf(v); if (idx >= 0) remaining.splice(idx, 1); });
+  pool.innerHTML = remaining.length > 0
+    ? `<span style="color:var(--text-muted);font-size:0.8rem;">Remaining: </span>` + remaining.map(v => `<span style="display:inline-block;padding:2px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;font-weight:600;font-size:0.85rem;">${v}</span>`).join('')
+    : `<span style="color:hsl(153,47%,35%);font-size:0.8rem;font-weight:600;">All scores assigned!</span>`;
+}
+
+function updatePointBuyDisplay() {
+  const infoEl = document.getElementById('ability-method-info');
+  let spent = 0;
+  ABILITIES.forEach(a => {
+    const val = Math.max(8, Math.min(15, parseInt(document.getElementById(`f-${a}`).value) || 8));
+    spent += POINT_BUY_COSTS[val] || 0;
+  });
+  const remaining = POINT_BUY_TOTAL - spent;
+  const color = remaining < 0 ? 'hsl(0,60%,40%)' : remaining === 0 ? 'hsl(153,47%,35%)' : 'var(--text)';
+  infoEl.style.display = '';
+  infoEl.innerHTML = `<strong>Point Buy:</strong> <span style="color:${color};font-weight:700;">${remaining}</span> / ${POINT_BUY_TOTAL} points remaining. Scores: 8–15.
+    <button type="button" class="btn btn-secondary btn-small" style="font-size:0.72rem;padding:0.2rem 0.6rem;min-height:1.75rem;margin-left:6px;" onclick="resetPointBuy()">Reset to 8s</button>`;
+}
+
+function resetPointBuy() {
+  ABILITIES.forEach(a => { document.getElementById(`f-${a}`).value = 8; });
+  updateAbilityModBadges();
+  updateSkillModifiers();
+  updateSavingThrows();
+  updatePointBuyDisplay();
+  updateHPBreakdown();
+}
+
+function rollAbilityScores() {
+  const results = [];
+  for (let i = 0; i < 6; i++) {
+    const dice = [1,2,3,4].map(() => Math.floor(Math.random() * 6) + 1);
+    dice.sort((a, b) => b - a);
+    results.push(dice[0] + dice[1] + dice[2]);
+  }
+  results.sort((a, b) => b - a);
+  ABILITIES.forEach((a, i) => { document.getElementById(`f-${a}`).value = results[i]; });
+  updateAbilityModBadges();
+  updateSkillModifiers();
+  updateSavingThrows();
+  autoSetHP();
+  updateHPBreakdown();
+  const el = document.getElementById('roll-results');
+  if (el) el.textContent = `Rolled: ${results.join(', ')}`;
+}
+
+// --- Auto-populate class features & species traits ---
+function autoPopulateFeatures() {
+  const cls = document.getElementById('f-class').value;
+  const species = document.getElementById('f-species').value;
+  const level = parseInt(document.getElementById('f-level').value) || 1;
+
+  // Remove previously auto-added features (class + species only)
+  selectedFeatures = selectedFeatures.filter(f => f.source !== 'class' && f.source !== 'species');
+
+  // Add class features up to current level
+  if (cls) {
+    const classFeats = allFeatures.filter(f => f.source === 'class' && f._className === cls && f._level <= level);
+    classFeats.forEach(f => {
+      if (!selectedFeatures.find(s => s.name === f.name && s.sourceDetail === f.sourceDetail)) {
+        selectedFeatures.push({ ...f });
+      }
+    });
+  }
+
+  // Add species traits
+  if (species) {
+    const speciesTraits = allFeatures.filter(f => f.source === 'species' && f._speciesName === species);
+    speciesTraits.forEach(f => {
+      if (!selectedFeatures.find(s => s.name === f.name && s.sourceDetail === f.sourceDetail)) {
+        selectedFeatures.push({ ...f });
+      }
+    });
+  }
+
+  renderSelectedFeatures();
+}
+
+// --- Smart spell pre-filtering ---
+function getMaxSpellLevel(cls, level) {
+  const slots = getSpellSlots(cls, level);
+  if (slots.type === 'none') return -1;
+  if (slots.type === 'pact') return slots.slotLevel;
+  return slots.slots.length;
+}
+
+function applySmartSpellFilters() {
+  const cls = document.getElementById('f-class').value;
+  const level = parseInt(document.getElementById('f-level').value) || 1;
+  const classFilter = document.getElementById('spell-class-filter');
+  const levelFilter = document.getElementById('spell-level-filter');
+
+  if (cls && SPELLCASTING_ABILITY[cls]) {
+    classFilter.value = cls.toLowerCase();
+    // Set max level hint but don't restrict — DM might want higher-level scrolls
+  } else {
+    classFilter.value = '';
+  }
+}
+
+// --- Level Up ---
+async function openLevelUpModal(charId) {
+  const c = await db.getCharacter(charId);
+  if (!c) return;
+  const oldLevel = c.level;
+  const newLevel = oldLevel + 1;
+  if (newLevel > 20) { dialogAlert('Character is already at maximum level (20).', 'Level Up', 'info'); return; }
+
+  const cls = c.class;
+  const hitDie = HIT_DIE[cls] || 8;
+  const conMod = Math.floor(((c.CON || 10) - 10) / 2);
+  const avg = Math.floor(hitDie / 2) + 1;
+  const avgHP = avg + conMod;
+  const profOld = calcProfBonus(oldLevel);
+  const profNew = calcProfBonus(newLevel);
+
+  // New class features at this level
+  const newFeatures = allFeatures.filter(f => f.source === 'class' && f._className === cls && f._level === newLevel);
+
+  // ASI levels (5.5e: 4, 8, 12, 16, 19)
+  const asiLevels = [4, 8, 12, 16, 19];
+  const isASI = asiLevels.includes(newLevel);
+
+  // Spell slot changes
+  const oldSlots = getSpellSlots(cls, oldLevel);
+  const newSlots = getSpellSlots(cls, newLevel);
+  let slotsChanged = false;
+  if (newSlots.type !== 'none') {
+    if (newSlots.type === 'pact') {
+      slotsChanged = oldSlots.type !== 'pact' || oldSlots.slots !== newSlots.slots || oldSlots.slotLevel !== newSlots.slotLevel;
+    } else {
+      slotsChanged = JSON.stringify(oldSlots.slots) !== JSON.stringify(newSlots.slots);
+    }
+  }
+
+  let html = `<div style="margin-bottom:12px;font-size:1rem;">
+    <strong>${esc(c.name)}</strong> — Level ${oldLevel} → <strong style="color:var(--accent);">${newLevel}</strong>
+  </div>`;
+
+  // HP section
+  html += `<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:12px;">
+    <strong>Hit Points</strong> (d${hitDie} + ${conMod >= 0 ? '+' : ''}${conMod} CON)
+    <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+      <button type="button" class="btn btn-primary btn-small" onclick="levelUpRollHP(${charId}, ${hitDie}, ${conMod})">Roll d${hitDie}</button>
+      <button type="button" class="btn btn-secondary btn-small" onclick="levelUpAvgHP(${charId}, ${avgHP})">Take Average (+${avgHP})</button>
+      <span id="levelup-hp-result" style="font-weight:600;"></span>
+    </div>
+  </div>`;
+
+  // Proficiency bonus change
+  if (profNew > profOld) {
+    html += `<div style="background:hsl(153,30%,93%);border:1px solid hsl(153,30%,80%);border-radius:6px;padding:10px;margin-bottom:12px;">
+      Proficiency Bonus: +${profOld} → <strong>+${profNew}</strong>
+    </div>`;
+  }
+
+  // New features
+  if (newFeatures.length > 0) {
+    html += `<div style="margin-bottom:12px;">
+      <strong>New Class Features:</strong>
+      ${newFeatures.map(f => `<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-top:6px;">
+        <strong>${esc(f.name)}</strong>
+        <div style="font-size:0.85rem;color:var(--text-muted);margin-top:2px;">${esc(f.description).substring(0, 200)}${f.description.length > 200 ? '…' : ''}</div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  // ASI
+  if (isASI) {
+    html += `<div style="background:hsl(42,55%,93%);border:1px solid hsl(42,55%,75%);border-radius:6px;padding:10px;margin-bottom:12px;">
+      <strong>Ability Score Improvement!</strong> Increase one ability by 2, or two abilities by 1 each, or pick a feat.
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;" id="asi-controls">
+        ${ABILITIES.map(a => `<div style="text-align:center;">
+          <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);font-family:var(--font-heading);">${a} (${c[a]})</div>
+          <div style="display:flex;gap:2px;margin-top:2px;">
+            <button type="button" class="hp-btn hp-btn-sm" onclick="levelUpASI('${charId}','${a}',1)">+1</button>
+            <button type="button" class="hp-btn hp-btn-sm" onclick="levelUpASI('${charId}','${a}',2)">+2</button>
+          </div>
+        </div>`).join('')}
+      </div>
+      <div id="asi-pending" style="margin-top:6px;font-size:0.85rem;color:var(--text-muted);"></div>
+    </div>`;
+  }
+
+  // Spell slots
+  if (slotsChanged) {
+    let slotText = '';
+    if (newSlots.type === 'pact') {
+      slotText = `Pact Magic: ${newSlots.slots} slots at level ${newSlots.slotLevel}`;
+    } else {
+      slotText = newSlots.slots.map((n, i) => `L${i+1}: ${n}`).join(', ');
+    }
+    html += `<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:12px;">
+      <strong>Spell Slots:</strong> ${slotText}
+    </div>`;
+  }
+
+  // Apply button
+  html += `<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+    <button type="button" class="btn btn-secondary" onclick="document.getElementById('levelup-modal').close()">Cancel</button>
+    <button type="button" class="btn btn-primary" id="btn-apply-levelup" onclick="applyLevelUp('${charId}')">Apply Level Up</button>
+  </div>`;
+
+  // Store pending changes
+  window._levelUpPending = { charId, newLevel, hpGain: 0, asiChanges: {} };
+
+  document.getElementById('levelup-title').textContent = `Level Up: ${c.name}`;
+  document.getElementById('levelup-body').innerHTML = html;
+  document.getElementById('levelup-modal').showModal();
+}
+
+function levelUpRollHP(charId, hitDie, conMod) {
+  const roll = Math.floor(Math.random() * hitDie) + 1;
+  const gain = Math.max(1, roll + conMod);
+  window._levelUpPending.hpGain = gain;
+  document.getElementById('levelup-hp-result').textContent = `Rolled ${roll} + ${conMod} CON = +${gain} HP`;
+  document.getElementById('levelup-hp-result').style.color = roll >= hitDie / 2 ? 'hsl(153,47%,35%)' : 'hsl(0,60%,40%)';
+}
+
+function levelUpAvgHP(charId, avgHP) {
+  window._levelUpPending.hpGain = Math.max(1, avgHP);
+  document.getElementById('levelup-hp-result').textContent = `Average = +${Math.max(1, avgHP)} HP`;
+  document.getElementById('levelup-hp-result').style.color = 'var(--text)';
+}
+
+function levelUpASI(charId, ability, amount) {
+  const pending = window._levelUpPending;
+  const totalUsed = Object.values(pending.asiChanges).reduce((s, v) => s + v, 0);
+  if (totalUsed + amount > 2) {
+    showToast('ASI limit: 2 points total');
+    return;
+  }
+  pending.asiChanges[ability] = (pending.asiChanges[ability] || 0) + amount;
+  const el = document.getElementById('asi-pending');
+  if (el) {
+    const changes = Object.entries(pending.asiChanges).filter(([,v]) => v > 0).map(([a,v]) => `${a} +${v}`);
+    el.textContent = changes.length ? `Pending: ${changes.join(', ')} (${Object.values(pending.asiChanges).reduce((s,v)=>s+v,0)}/2 points used)` : '';
+  }
+}
+
+async function applyLevelUp(charId) {
+  const pending = window._levelUpPending;
+  if (!pending || pending.charId !== charId) return;
+  if (pending.hpGain === 0) {
+    await dialogAlert('Please roll or take average HP first.', 'Level Up', 'info');
+    return;
+  }
+
+  const c = await db.getCharacter(charId);
+  if (!c) return;
+
+  c.level = pending.newLevel;
+  c.HP = c.HP + pending.hpGain;
+
+  // Apply ASI
+  for (const [ability, amount] of Object.entries(pending.asiChanges)) {
+    c[ability] = Math.min(30, (c[ability] || 10) + amount);
+  }
+
+  // Auto-add new class features
+  const newFeatures = allFeatures.filter(f => f.source === 'class' && f._className === c.class && f._level === pending.newLevel);
+  const existingFeatures = c.features || [];
+  newFeatures.forEach(f => {
+    if (!existingFeatures.find(ef => ef.name === f.name && ef.sourceDetail === f.sourceDetail)) {
+      existingFeatures.push({ name: f.name, description: f.description, source: f.source, sourceDetail: f.sourceDetail });
+    }
+  });
+  c.features = existingFeatures;
+
+  try {
+    await db.putCharacter(c);
+    // Update HP state
+    if (characterHPState[charId]) {
+      characterHPState[charId].currentHP = c.HP;
+    }
+    saveCharacterHP(charId);
+    document.getElementById('levelup-modal').close();
+    loadCharacters();
+    broadcastCharacterToPlayer(charId);
+    showToast(`${c.name} leveled up to ${c.level}!`);
+  } catch (err) {
+    dialogAlert(err.message, 'Level Up Error', 'error');
+  }
 }
 
 // --- Features DB ---
@@ -704,6 +1104,7 @@ function renderCharacterList(chars) {
         <span class="char-meta">Level ${c.level} ${esc(c.species || '')} ${esc(c.class)} — HP ${c.HP} / AC ${c.AC}</span>
       </div>
       <div class="char-item-actions" style="display:flex;gap:6px;">
+        ${c.level < 20 ? `<button class="btn btn-secondary btn-small" style="font-size:0.72rem;padding:0.2rem 0.5rem;min-height:1.6rem;" onclick="event.stopPropagation();openLevelUpModal('${c._id}')" title="Level Up">Lvl Up</button>` : ''}
         <button class="remove-item" onclick="event.stopPropagation();deleteCharacter('${c._id}')" title="Delete">&times;</button>
       </div>
     </div>
@@ -796,6 +1197,9 @@ async function openCharModal(id) {
   } else {
     document.getElementById('char-modal-title').textContent = 'New Character';
   }
+  setAbilityMethod('manual');
+  updateHPBreakdown();
+  applySmartSpellFilters();
   modal.showModal();
 }
 
