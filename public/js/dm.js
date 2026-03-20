@@ -573,17 +573,23 @@ function updateSpellSlotsInfo() {
   const cls = document.getElementById('f-class').value;
   const level = parseInt(document.getElementById('f-level').value) || 1;
   const slots = getSpellSlots(cls, level);
-  if (slots.type === 'none' || (slots.type !== 'pact' && slots.slots.length === 0)) {
-    el.textContent = '';
+  const known = getSpellsKnown(cls, level);
+
+  if (slots.type === 'none' || (slots.type !== 'pact' && slots.slots.length === 0 && known.cantrips === 0)) {
+    el.innerHTML = '';
     return;
   }
-  let text;
+
+  let parts = [];
+  if (known.cantrips > 0) parts.push(`Cantrips: ${known.cantrips}`);
+  if (known.prepared > 0) parts.push(`Prepared spells: ${known.prepared}`);
+
   if (slots.type === 'pact') {
-    text = `Pact Magic: ${slots.slots} slot${slots.slots > 1 ? 's' : ''} at level ${slots.slotLevel}`;
-  } else {
-    text = 'Spell slots: ' + slots.slots.map((n, i) => `L${i + 1}: ${n}`).join(' · ');
+    parts.push(`Pact Magic: ${slots.slots} slot${slots.slots > 1 ? 's' : ''} at level ${slots.slotLevel}`);
+  } else if (slots.slots.length > 0) {
+    parts.push('Slots: ' + slots.slots.map((n, i) => `L${i + 1}: ${n}`).join(' · '));
   }
-  el.textContent = text;
+  el.innerHTML = parts.join(' · ');
 }
 
 // --- Level Up ---
