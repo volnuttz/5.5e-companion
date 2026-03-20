@@ -609,8 +609,8 @@ async function openLevelUpModal(charId) {
   html += `<div style="background:var(--bg-input);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:12px;">
     <strong>Hit Points</strong> (d${hitDie} + ${conMod >= 0 ? '+' : ''}${conMod} CON)
     <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
-      <button type="button" class="btn btn-primary btn-small" onclick="levelUpRollHP(${charId}, ${hitDie}, ${conMod})">Roll d${hitDie}</button>
-      <button type="button" class="btn btn-secondary btn-small" onclick="levelUpAvgHP(${charId}, ${avgHP})">Take Average (+${avgHP})</button>
+      <button type="button" class="btn btn-primary btn-small" onclick="levelUpRollHP('${charId}', ${hitDie}, ${conMod})">Roll d${hitDie}</button>
+      <button type="button" class="btn btn-secondary btn-small" onclick="levelUpAvgHP('${charId}', ${avgHP})">Take Average (+${avgHP})</button>
       <span id="levelup-hp-result" style="font-weight:600;"></span>
     </div>
   </div>`;
@@ -737,9 +737,9 @@ async function applyLevelUp(charId) {
 
   try {
     await db.putCharacter(c);
-    // Update HP state
+    // Update HP state — increase current HP by the gain (not full heal)
     if (characterHPState[charId]) {
-      characterHPState[charId].currentHP = c.HP;
+      characterHPState[charId].currentHP = Math.min(c.HP, characterHPState[charId].currentHP + pending.hpGain);
     }
     saveCharacterHP(charId);
     document.getElementById('levelup-modal').close();
