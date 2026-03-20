@@ -446,6 +446,7 @@ function renderCharacterSheet(c, hpState) {
     const spellAttack = profBonus + abilityMod;
     const attackStr = spellAttack >= 0 ? `+${spellAttack}` : `${spellAttack}`;
 
+    const known = getSpellsKnown(c.class, c.level);
     spellcastingInfoEl.innerHTML = `
       <div class="combat-stats" style="margin-bottom:16px;">
         <div class="combat-stat">
@@ -459,6 +460,14 @@ function renderCharacterSheet(c, hpState) {
         <div class="combat-stat">
           <div class="label">Spell Attack</div>
           <div class="value">${attackStr}</div>
+        </div>
+        ${known.cantrips > 0 ? `<div class="combat-stat">
+          <div class="label">Cantrips Known</div>
+          <div class="value">${known.cantrips}</div>
+        </div>` : ''}
+        <div class="combat-stat">
+          <div class="label">Prepared Spells</div>
+          <div class="value">${known.prepared}</div>
         </div>
       </div>
     `;

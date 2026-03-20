@@ -122,6 +122,48 @@ const WARLOCK_SLOTS = {
   20: { slots: 4, level: 5 }
 };
 
+// Cantrips known per class per level (SRD 5.2)
+// Bard: 2 at L1, +1 at L4, +1 at L10
+// Cleric: 3 at L1, +1 at L4, +1 at L10
+// Druid: 2 at L1, +1 at L4, +1 at L10
+// Sorcerer: 4 at L1, +1 at L4, +1 at L10
+// Warlock: 2 at L1, +1 at L4, +1 at L10
+// Wizard: 3 at L1, +1 at L4, +1 at L10
+// Paladin/Ranger: 0 (optional cantrips via Fighting Style)
+const CANTRIPS_KNOWN = {
+  Bard:     [2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4],
+  Cleric:   [3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5],
+  Druid:    [2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4],
+  Sorcerer: [4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,6,6],
+  Warlock:  [2,2,2,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4],
+  Wizard:   [3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5]
+};
+
+// Prepared spells (level 1+) per class per level (SRD 5.2)
+// Bard/Cleric/Druid share the same progression
+// Sorcerer starts lower (2 at L1, 4 at L2) then matches from L3
+// Wizard matches others until L14, then pulls ahead
+// Warlock has a slower progression (half-caster-like for prepared count)
+// Paladin/Ranger share the same half-caster progression
+const PREPARED_SPELLS = {
+  Bard:     [4,5,6,7,9,10,11,12,14,15,16,16,17,17,18,18,19,20,21,22],
+  Cleric:   [4,5,6,7,9,10,11,12,14,15,16,16,17,17,18,18,19,20,21,22],
+  Druid:    [4,5,6,7,9,10,11,12,14,15,16,16,17,17,18,18,19,20,21,22],
+  Sorcerer: [2,4,6,7,9,10,11,12,14,15,16,16,17,17,18,18,19,20,21,22],
+  Warlock:  [2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15],
+  Wizard:   [4,5,6,7,9,10,11,12,14,15,16,16,17,18,19,21,22,23,24,25],
+  Paladin:  [2,3,4,5,6,6,7,7,9,9,10,10,11,11,12,12,14,14,15,15],
+  Ranger:   [2,3,4,5,6,6,7,7,9,9,10,10,11,11,12,12,14,14,15,15]
+};
+
+// Get cantrips known and prepared spells for a class at a given level
+function getSpellsKnown(className, level) {
+  const lvl = Math.max(1, Math.min(20, level));
+  const cantrips = CANTRIPS_KNOWN[className] ? CANTRIPS_KNOWN[className][lvl - 1] : 0;
+  const prepared = PREPARED_SPELLS[className] ? PREPARED_SPELLS[className][lvl - 1] : 0;
+  return { cantrips, prepared };
+}
+
 function getSpellSlots(className, level) {
   const fullCasters = ['Bard', 'Cleric', 'Druid', 'Sorcerer', 'Wizard'];
   const halfCasters = ['Paladin', 'Ranger'];
