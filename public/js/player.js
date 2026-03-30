@@ -15,8 +15,8 @@ function calcProfBonus(level) {
   return Math.ceil(level / 4) + 1;
 }
 
-// Extract roomId from URL: /join/<roomId>
-const roomId = window.location.pathname.split('/').pop();
+// Extract roomId from URL query param: player.html?room=<roomId>
+const roomId = new URLSearchParams(window.location.search).get('room');
 let sessionPin = '';
 let activeCharacterId = null;
 let playerPeer = null;

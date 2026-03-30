@@ -3,13 +3,8 @@
 
 const DND_PEER_PREFIX = 'dnd-companion-';
 
-// Self-hosted PeerJS server config — avoids the deprecated 0.peerjs.com default
-const PEER_SERVER_CONFIG = {
-  host: window.location.hostname,
-  port: window.location.port ? parseInt(window.location.port) : (window.location.protocol === 'https:' ? 443 : 80),
-  path: '/peerjs',
-  secure: window.location.protocol === 'https:'
-};
+// Use PeerJS public cloud server (no self-hosted signaling needed for static hosting)
+const PEER_SERVER_CONFIG = {};
 
 const STALE_CONNECTION_TIMEOUT = 60000; // 60s without ping = stale
 const STALE_CHECK_INTERVAL = 15000;     // check every 15s
