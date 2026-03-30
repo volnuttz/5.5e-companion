@@ -869,9 +869,9 @@ async function loadFeaturesDB() {
   let featsRes, traitsRes, classRes;
   try {
     [featsRes, traitsRes, classRes] = await Promise.all([
-      fetch('/api/feats'),
-      fetch('/api/species-traits'),
-      fetch('/api/class-features')
+      fetch('data/srd-5.2-feats.json'),
+      fetch('data/srd-5.2-species-traits.json'),
+      fetch('data/srd-5.2-class-features.json')
     ]);
     if (!featsRes.ok || !traitsRes.ok || !classRes.ok) throw new Error('HTTP error loading features');
   } catch (e) {
@@ -1017,7 +1017,7 @@ function renderSelectedFeatures() {
 // --- Spells DB ---
 async function loadSpellsDB() {
   try {
-    const res = await fetch('/api/spells');
+    const res = await fetch('data/srd-5.2-spells.json');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     allSpells = await res.json();
   } catch (e) {
@@ -1495,7 +1495,7 @@ async function deleteCharacter(id) {
 // --- Equipment DB & Picker ---
 async function loadEquipmentDB() {
   try {
-    const res = await fetch('/api/equipment');
+    const res = await fetch('data/srd-5.2-equipment.json');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     allEquipment = await res.json();
   } catch (e) {
@@ -1762,7 +1762,7 @@ async function showQR() {
   const roomId = await db.ensureRoomId();
   const protocol = window.location.protocol;
   const host = window.location.host;
-  const url = `${protocol}//${host}/join/${roomId}`;
+  const url = `${protocol}//${host}${window.location.pathname.replace(/\/[^/]*$/, '')}/player.html?room=${roomId}`;
 
   QRCode.toCanvas(document.getElementById('qr-canvas'), url, { width: 256, margin: 2 });
   document.getElementById('qr-url').textContent = url;
@@ -1797,7 +1797,7 @@ let _bfUid = 0;
 
 async function loadMonstersDB() {
   try {
-    const res = await fetch('/api/monsters');
+    const res = await fetch('data/srd-5.2-monsters.json');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     allMonsters = await res.json();
   } catch (e) {

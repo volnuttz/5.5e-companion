@@ -6,9 +6,10 @@
 
 ## Tech Stack
 
-- **Backend:** Node.js + Express 5.2.1 (static file server + SRD data API only)
+- **Hosting:** GitHub Pages (fully static, no server required)
+- **Local dev:** Node.js + Express 5.2.1 (simple static file server)
 - **Storage:** IndexedDB in DM's browser (no server-side database)
-- **Real-time:** PeerJS/WebRTC for DM-to-player communication
+- **Real-time:** PeerJS/WebRTC using the public PeerJS cloud signaling server
 - **Frontend:** Vanilla HTML/CSS/JS with DaisyUI 4.x + Tailwind CSS (CDN, no build process)
 - **SRD Data:** 5.2 reference data (CC BY 4.0) as read-only JSON in `data/`
 - **External libs (CDN):** DaisyUI 4.x, Tailwind CSS, PeerJS 1.x, QRCode.js 1.x
@@ -16,7 +17,7 @@
 ## Directory Structure
 
 ```
-server.js                        Express server (72 lines)
+server.js                        Local dev static file server
 package.json                     Dependencies (express only)
 data/
   srd-5.2-spells.json            ~500+ spells (342 KB)
@@ -25,50 +26,42 @@ data/
   srd-5.2-class-features.json    Features for all 12 classes (36 KB)
   srd-5.2-species-traits.json    10 playable species traits (4.5 KB)
   srd-5.2-feats.json             Feats (3.5 KB)
-public/
-  dm.html                        DM dashboard (595 lines)
-  player.html                    Player character sheet (108 lines)
-  css/style.css                  Parchment/DaisyUI theme (1273 lines)
-  img/background_texture.png     Background texture
-  js/
-    constants.js                 Game tables, class data, skills (237 lines)
-    db.js                        IndexedDB abstraction layer (255 lines)
-    peer.js                      PeerJS communication layer (381 lines)
-    dm.js                        DM dashboard logic (2963 lines)
-    player.js                    Player sheet logic (570 lines)
+index.html                       DM dashboard
+player.html                      Player character sheet
+404.html                         GitHub Pages fallback
+css/style.css                    Parchment/DaisyUI theme
+img/background_texture.png       Background texture
+js/
+  constants.js                   Game tables, class data, skills (237 lines)
+  db.js                          IndexedDB abstraction layer (255 lines)
+  peer.js                        PeerJS communication layer
+  dm.js                          DM dashboard logic
+  player.js                      Player sheet logic
 ```
 
 ## Key Files
 
-- `server.js` — Static file server + SRD JSON data API routes
-- `public/js/db.js` — IndexedDB abstraction (database: `dnd-companion`, stores: `characters`, `dmState`). Exposed as `window.db`
-- `public/js/peer.js` — PeerJS layer with factory functions `createDMPeer(roomId)` and `createPlayerPeer(roomId)`. Exposed as `window.peerManager`
-- `public/js/dm.js` — DM dashboard: character CRUD, compendium search, battlefield, treasures, shops, notes, session management, workspace backup/restore, TOML character import
-- `public/js/player.js` — Player sheet: PIN join flow, character claiming, auto-reclaim on reconnect, tabbed display (Stats/Equipment/Spells)
-- `public/js/constants.js` — CLASSES, SPECIES, BACKGROUNDS, HIT_DIE, spell slot tables, saving throw proficiencies, spellcasting abilities, 18 skill definitions
-- `data/srd-5.2-*.json` — SRD reference data (read-only, loaded once on server start)
+- `server.js` — Local dev only: static file server (not used in production)
+- `js/db.js` — IndexedDB abstraction (database: `dnd-companion`, stores: `characters`, `dmState`). Exposed as `window.db`
+- `js/peer.js` — PeerJS layer with factory functions `createDMPeer(roomId)` and `createPlayerPeer(roomId)`. Uses public PeerJS cloud server. Exposed as `window.peerManager`
+- `js/dm.js` — DM dashboard: character CRUD, compendium search, battlefield, treasures, shops, notes, session management, workspace backup/restore, TOML character import
+- `js/player.js` — Player sheet: PIN join flow, character claiming, auto-reclaim on reconnect, tabbed display (Stats/Equipment/Spells)
+- `js/constants.js` — CLASSES, SPECIES, BACKGROUNDS, HIT_DIE, spell slot tables, saving throw proficiencies, spellcasting abilities, 18 skill definitions
+- `data/srd-5.2-*.json` — SRD reference data (read-only, fetched directly by the browser)
 
-## Server API Routes
+## Deployment
 
-```
-GET  /                     → Redirect to /dm
-GET  /dm                   → dm.html
-GET  /join/:roomId         → player.html
-GET  /health               → { status: 'ok' }
-GET  /api/spells           → All spells
-GET  /api/feats            → All feats
-GET  /api/species-traits   → Species traits
-GET  /api/class-features   → Class features by class name
-GET  /api/equipment        → All equipment
-GET  /api/monsters         → All monsters
-Static files from /public
-```
+- **GitHub Pages** — `serverless` branch, source: `/ (root)`
+- **URL:** `https://volnuttz.github.io/5.5e-Companion/`
+- **Player join URL format:** `player.html?room=<roomId>` (generated automatically by the QR modal)
+- All asset paths are relative — no absolute `/` paths anywhere
 
 ## Architecture Patterns
 
+- **Fully static** — no server required; all files served directly by GitHub Pages
 - **No server-side database** — all data stored in DM's browser via IndexedDB
 - **No authentication** — DM opens the page, data persists in browser
-- **WebRTC peer connections** — PeerJS uses a public signaling server; same network not required
+- **WebRTC peer connections** — PeerJS uses the public cloud signaling server (`0.peerjs.com`)
 - **Session flow:** DM creates session with PIN → generates QR code → players scan and join via PeerJS → claim characters
 - **Peer ID format:** `dnd-companion-{roomId}` where roomId is auto-generated UUID stored in IndexedDB
 - **HP tracking** is stored separately from character objects in `dmState.characterHP` to persist across character updates
@@ -138,7 +131,7 @@ Key-value pairs: `roomId`, `pin`, `battlefield`, `characterHP`, `treasures`, `sh
 
 ## Commands
 
-- `npm start` — Start the Express server (default port 3000)
+- `npm start` — Start the local dev server (default port 3000, serves from repo root)
 - No test suite, no linting, no build process configured
 
 ## Conventions
@@ -152,5 +145,6 @@ Key-value pairs: `roomId`, `pin`, `battlefield`, `characterHP`, `treasures`, `sh
 - **Array limits:** 50 each for equipment/spells/features, 20 characters per DM, 50 battlefield monsters
 - **String limits:** 100 (name), 50 (class/species), 100 (background), 500 (descriptions)
 - **SRD data files in `data/` are read-only** — never modify them
+- **All asset paths must be relative** — never use absolute `/` paths (breaks GitHub Pages subpath)
 - **No external state management** — plain JS objects and DOM manipulation
 - **Event-driven** — heavy use of addEventListener for UI interactions

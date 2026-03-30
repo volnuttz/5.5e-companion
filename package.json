@@ -12,7 +12,6 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "express": "^5.2.1",
-    "peer": "^1.0.2"
+    "express": "^5.2.1"
   }
 }
