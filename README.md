@@ -16,41 +16,20 @@ A web app for tabletop 5.5e sessions. DMs manage characters and track battlefiel
 
 ## Tech Stack
 
-- **Backend:** Node.js, Express 5 (static file server + SRD data API)
+- **Hosting:** GitHub Pages (fully static, no server required)
 - **Storage:** IndexedDB (client-side, DM's browser is source of truth)
-- **Real-time:** PeerJS / WebRTC data channels
+- **Real-time:** PeerJS / WebRTC data channels (public cloud signaling)
 - **Frontend:** Vanilla HTML/CSS/JS + DaisyUI 4 + Tailwind CSS (CDN, no build step)
 
-## Prerequisites
+## Live App
 
-- [Node.js](https://nodejs.org/) (v18+)
+`https://volnuttz.github.io/5.5e-Companion/`
 
-## Setup
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <repo-url>
-   cd 5.5e-Companion
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Start the app**
-
-   ```bash
-   npm start
-   ```
-
-   The app runs at `http://localhost:3000`. The DM dashboard is at `/dm`.
+Players join via `player.html?room=<roomId>` — the link and QR code are generated automatically when the DM starts a session.
 
 ## How It Works
 
-1. DM opens `/dm` and creates characters
+1. DM opens the app and creates characters
 2. DM clicks "Start Session" and sets a PIN
 3. A QR code is generated — players scan it or navigate to the join URL
 4. Players enter the PIN and claim a character
@@ -58,35 +37,35 @@ A web app for tabletop 5.5e sessions. DMs manage characters and track battlefiel
 
 All data is stored in the DM's browser via IndexedDB. Use **Save Workspace** to export data as JSON for backup.
 
-## Environment Variables
+## Local Development
 
-| Variable | Description | Default |
-| -------- | ----------- | ------- |
-| `PORT`   | Server port | `3000`  |
+Requires [Node.js](https://nodejs.org/) v18+.
+
+```bash
+git clone https://github.com/volnuttz/5.5e-Companion.git
+cd 5.5e-Companion
+npm install
+npm start
+```
+
+The app runs at `http://localhost:3000`.
 
 ## Project Structure
 
 ```
-├── server.js            # Express server, static files, SRD data API
+├── server.js            # Local dev static file server (not used in production)
 ├── data/                # SRD 5.2 reference data (read-only JSON)
-├── public/
-│   ├── css/style.css    # Parchment theme styles
-│   ├── js/
-│   │   ├── constants.js # Classes, species, backgrounds, spell slots
-│   │   ├── db.js        # IndexedDB abstraction layer
-│   │   ├── peer.js      # PeerJS communication layer
-│   │   ├── dm.js        # DM dashboard logic
-│   │   └── player.js    # Player character sheet logic
-│   ├── dm.html          # DM dashboard page
-│   └── player.html      # Player view page
+├── css/style.css        # Parchment theme styles
+├── js/
+│   ├── constants.js     # Classes, species, backgrounds, spell slots
+│   ├── db.js            # IndexedDB abstraction layer
+│   ├── peer.js          # PeerJS communication layer
+│   ├── dm.js            # DM dashboard logic
+│   └── player.js        # Player character sheet logic
+├── index.html           # DM dashboard page
+├── player.html          # Player view page
 └── LICENSE-SRD          # SRD 5.2 CC BY 4.0 attribution
 ```
-
-## Deployment (Railway)
-
-1. Create an app service on [Railway](https://railway.com)
-2. Set `PORT=3000` in environment variables
-3. Deploy — no database setup needed (data lives in browser)
 
 ## License
 
