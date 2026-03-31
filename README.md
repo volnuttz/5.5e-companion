@@ -23,7 +23,7 @@ A web app for tabletop 5.5e sessions. DMs manage characters and track battlefiel
 
 ## Live App
 
-`https://volnuttz.github.io/5.5e-Companion/`
+`https://volnuttz.github.io/5.5e-companion/`
 
 Players join via `player.html?room=<roomId>` — the link and QR code are generated automatically when the DM starts a session.
 
