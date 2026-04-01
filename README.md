@@ -2,6 +2,8 @@
 
 A web app for tabletop 5.5e sessions. DMs manage characters and track battlefield encounters, while players view their character sheets in real time via QR code + PIN.
 
+**Live site:** https://volnuttz.github.io/5.5e-companion
+
 ## Features
 
 - **DM Dashboard** - Create and manage characters (stats, equipment, spells, features, currency)
@@ -20,12 +22,6 @@ A web app for tabletop 5.5e sessions. DMs manage characters and track battlefiel
 - **Storage:** IndexedDB (client-side, DM's browser is source of truth)
 - **Real-time:** PeerJS / WebRTC data channels (public cloud signaling)
 - **Frontend:** Vanilla HTML/CSS/JS + DaisyUI 4 + Tailwind CSS (CDN, no build step)
-
-## Live App
-
-`https://volnuttz.github.io/5.5e-companion/`
-
-Players join via `player.html?room=<roomId>` — the link and QR code are generated automatically when the DM starts a session.
 
 ## How It Works
 
