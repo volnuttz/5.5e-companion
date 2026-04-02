@@ -35,16 +35,15 @@ All data is stored in the DM's browser via IndexedDB. Use **Save Workspace** to 
 
 ## Local Development
 
-Requires [Node.js](https://nodejs.org/) v18+.
+This is a static web app and can be run with Python's built-in server (recommended):
 
 ```bash
-git clone https://github.com/volnuttz/5.5e-Companion.git
-cd 5.5e-Companion
-npm install
-npm start
+git clone https://github.com/volnuttz/5.5e-companion.git
+cd 5.5e-companion
+python3 -m http.server 8000
 ```
 
-The app runs at `http://localhost:3000`.
+Open `http://localhost:8000/index.html` for DM or `http://localhost:8000/player.html` for player.
 
 ## Project Structure
 
