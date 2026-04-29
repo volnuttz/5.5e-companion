@@ -327,7 +327,13 @@ input[type="checkbox"]:not(.collapse > input):hover {
 }
 .top-bar-filter-row { display: flex; gap: 0.375rem; flex-wrap: wrap; }
 
-.top-bar-results { max-height: 60vh; overflow-y: auto; }
+.top-bar-results {
+  max-height: 60vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
 
 .top-bar-hint {
   padding: 0.875rem 1rem;
