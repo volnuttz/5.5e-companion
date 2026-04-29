@@ -313,7 +313,7 @@ input[type="checkbox"]:not(.collapse > input):hover {
   border-radius: var(--radius);
   box-shadow: var(--shadow-lift);
   z-index: 500;
-  overflow: hidden;
+  overflow: clip;
 }
 .top-bar-dropdown.open { display: block; }
 
