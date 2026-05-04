@@ -1278,3 +1278,66 @@ input[type="checkbox"]:not(.collapse > input):hover {
 @supports (padding: env(safe-area-inset-top)) {
   .navbar { padding-top: max(0.5rem, env(safe-area-inset-top)); }
 }
+
+/* ============================================================
+   MOBILE SEARCH MODAL
+   ============================================================ */
+.mobile-search-modal .modal-box,
+.mobile-search-box {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100% !important;
+  height: 100dvh;
+  max-height: 100dvh !important;
+  border-radius: 0 !important;
+  margin: 0;
+  padding: 0;
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+.mobile-search-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-dark);
+  flex-shrink: 0;
+}
+
+.mobile-search-header .input {
+  font-size: 16px;
+  font-family: var(--font-body);
+  background: var(--bg-card);
+  color: var(--text);
+  border-color: var(--border-dark);
+}
+
+.mobile-search-filters {
+  padding: 0.625rem 0.75rem;
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.mobile-filter-row {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.mobile-search-results {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+@media (min-width: 769px) {
+  .mobile-search-modal { display: none !important; }
+}
