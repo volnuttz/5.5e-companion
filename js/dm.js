@@ -172,8 +172,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Compendium (top bar search)
   const topBarSearch = document.getElementById('top-bar-search');
   const topBarDropdown = document.getElementById('top-bar-dropdown');
+  topBarSearch.addEventListener('focus', () => {
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      topBarSearch.blur();
+      openMobileSearchModal();
+    } else {
+      openSearchDropdown(); filterCompendium();
+    }
+  });
   topBarSearch.addEventListener('input', () => { openSearchDropdown(); filterCompendium(); });
-  topBarSearch.addEventListener('focus', () => { openSearchDropdown(); filterCompendium(); });
   document.getElementById('compendium-category').addEventListener('change', filterCompendium);
   document.getElementById('compendium-spell-level').addEventListener('change', filterCompendium);
   document.getElementById('compendium-spell-class').addEventListener('change', filterCompendium);
@@ -188,6 +195,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   topBarSearch.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { closeSearchDropdown(); topBarSearch.blur(); }
   });
+
+  // Mobile search modal
+  const mobileSearchInput = document.getElementById('mobile-search-input');
+  mobileSearchInput.addEventListener('input', filterMobileCompendium);
+  document.getElementById('mobile-compendium-category').addEventListener('change', filterMobileCompendium);
+  document.getElementById('mobile-spell-level').addEventListener('change', filterMobileCompendium);
+  document.getElementById('mobile-spell-class').addEventListener('change', filterMobileCompendium);
+  document.getElementById('mobile-monster-type').addEventListener('change', filterMobileCompendium);
+  document.getElementById('mobile-monster-cr').addEventListener('change', filterMobileCompendium);
+  document.getElementById('mobile-feature-source').addEventListener('change', filterMobileCompendium);
 
   // Notes
   const notesEditor = document.getElementById('notes-editor');
@@ -2306,9 +2323,6 @@ function charTempHP(charId, delta) {
 
 function populateCompendiumMonsterFilters() {
   const types = [...new Set(allMonsters.map(m => m.type).filter(Boolean))].sort();
-  const typeEl = document.getElementById('compendium-monster-type');
-  types.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; typeEl.appendChild(o); });
-
   const crOrder = ['0','1/8','1/4','1/2','1','2','3','4','5','6','7','8','9','10',
     '11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','30'];
   const crs = [...new Set(allMonsters.map(m => String(m.CR)).filter(Boolean))];
@@ -2319,8 +2333,13 @@ function populateCompendiumMonsterFilters() {
     if (bi === -1) return -1;
     return ai - bi;
   });
-  const crEl = document.getElementById('compendium-monster-cr');
-  crs.forEach(cr => { const o = document.createElement('option'); o.value = cr; o.textContent = `CR ${cr}`; crEl.appendChild(o); });
+
+  for (const [typeId, crId] of [['compendium-monster-type', 'compendium-monster-cr'], ['mobile-monster-type', 'mobile-monster-cr']]) {
+    const typeEl = document.getElementById(typeId);
+    types.forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; typeEl.appendChild(o); });
+    const crEl = document.getElementById(crId);
+    crs.forEach(cr => { const o = document.createElement('option'); o.value = cr; o.textContent = `CR ${cr}`; crEl.appendChild(o); });
+  }
 }
 
 function openSearchDropdown() {
@@ -2328,6 +2347,93 @@ function openSearchDropdown() {
 }
 function closeSearchDropdown() {
   document.getElementById('top-bar-dropdown').classList.remove('open');
+}
+
+function openMobileSearchModal() {
+  const modal = document.getElementById('mobile-search-modal');
+  modal.showModal();
+  setTimeout(() => document.getElementById('mobile-search-input').focus(), 50);
+}
+
+function closeMobileSearchModal() {
+  document.getElementById('mobile-search-modal').close();
+  document.getElementById('mobile-search-input').value = '';
+  document.getElementById('mobile-compendium-category').value = '';
+  document.getElementById('mobile-spell-filters').style.display = 'none';
+  document.getElementById('mobile-monster-filters').style.display = 'none';
+  document.getElementById('mobile-feature-filters').style.display = 'none';
+  document.getElementById('mobile-search-results').innerHTML = '<p class="top-bar-hint">Type to search spells, monsters, equipment, features…</p>';
+}
+
+function filterMobileCompendium() {
+  const query = document.getElementById('mobile-search-input').value.trim().toLowerCase();
+  const category = document.getElementById('mobile-compendium-category').value;
+  document.getElementById('mobile-spell-filters').style.display = category === 'spell' ? 'flex' : 'none';
+  document.getElementById('mobile-monster-filters').style.display = category === 'monster' ? 'flex' : 'none';
+  document.getElementById('mobile-feature-filters').style.display = category === 'feature' ? 'flex' : 'none';
+  const resultsEl = document.getElementById('mobile-search-results');
+
+  if (!query && !category) {
+    resultsEl.innerHTML = '<p class="top-bar-hint">Type to search spells, monsters, equipment, features…</p>';
+    return;
+  }
+
+  let candidates = [];
+  if (!category || category === 'spell') allSpells.forEach(s => candidates.push({ type: 'spell', item: s }));
+  if (!category || category === 'monster') allMonsters.forEach(m => candidates.push({ type: 'monster', item: m }));
+  if (!category || category === 'equipment') allEquipment.forEach(e => candidates.push({ type: 'equipment', item: e }));
+  if (!category || category === 'feature') allFeatures.forEach(f => candidates.push({ type: 'feature', item: f }));
+
+  if (query) {
+    candidates = candidates.filter(({ item }) => {
+      const nameMatch = item.name && item.name.toLowerCase().includes(query);
+      const descMatch = item.description && item.description.toLowerCase().includes(query);
+      return nameMatch || descMatch;
+    });
+  }
+
+  if (category === 'spell') {
+    const lvl = document.getElementById('mobile-spell-level').value;
+    const cls = document.getElementById('mobile-spell-class').value;
+    if (lvl !== '') candidates = candidates.filter(({ item }) => String(item.level) === lvl);
+    if (cls) candidates = candidates.filter(({ item }) => item.classes && item.classes.includes(cls));
+  }
+  if (category === 'monster') {
+    const type = document.getElementById('mobile-monster-type').value;
+    const cr = document.getElementById('mobile-monster-cr').value;
+    if (type) candidates = candidates.filter(({ item }) => item.type === type);
+    if (cr) candidates = candidates.filter(({ item }) => String(item.CR) === cr);
+  }
+  if (category === 'feature') {
+    const src = document.getElementById('mobile-feature-source').value;
+    if (src) candidates = candidates.filter(({ item }) => item.source === src);
+  }
+
+  const shown = candidates.slice(0, 100);
+  if (shown.length === 0) {
+    resultsEl.innerHTML = '<div style="padding:12px;color:var(--text-muted);">No results found.</div>';
+    return;
+  }
+
+  window.mobileCompendiumResults = shown;
+  resultsEl.innerHTML = shown.map(({ type, item }, idx) => {
+    let subtitle = '';
+    if (type === 'spell') {
+      const lvlLabel = item.level === 0 ? 'Cantrip' : `Level ${item.level}`;
+      subtitle = `${lvlLabel}${item.school ? ' ' + item.school.charAt(0).toUpperCase() + item.school.slice(1) : ''}${item.classes?.length ? ' · ' + item.classes.join(', ') : ''}`;
+    } else if (type === 'monster') {
+      subtitle = [item.size, item.type, `CR ${item.CR}`].filter(Boolean).join(' · ');
+    } else if (type === 'equipment') {
+      subtitle = [item.type, item.category, item.cost].filter(Boolean).join(' · ');
+    } else if (type === 'feature') {
+      const srcLabel = item.source === 'class' ? 'Class Feature' : item.source === 'species' ? 'Species Trait' : 'Feat';
+      subtitle = `${srcLabel}${item.sourceDetail ? ' · ' + item.sourceDetail : ''}`;
+    }
+    return `<div class="list-item" style="cursor:pointer;" onclick="closeMobileSearchModal();showCompendiumDetail(mobileCompendiumResults[${idx}].type, mobileCompendiumResults[${idx}].item)">
+      <span>${esc(item.name)}</span>
+      <span style="color:var(--text-muted);font-size:0.85rem;">${esc(subtitle)}</span>
+    </div>`;
+  }).join('');
 }
 
 function filterCompendium() {

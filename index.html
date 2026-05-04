@@ -242,6 +242,56 @@
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
 
+  <!-- Mobile Search Modal -->
+  <dialog id="mobile-search-modal" class="modal mobile-search-modal">
+    <div class="modal-box mobile-search-box">
+      <div class="mobile-search-header">
+        <input type="text" id="mobile-search-input" class="input input-bordered w-full" placeholder="Search compendium…" autocomplete="off">
+        <button class="btn btn-sm btn-ghost btn-circle" onclick="closeMobileSearchModal()">✕</button>
+      </div>
+      <div class="mobile-search-filters">
+        <select id="mobile-compendium-category" class="select select-bordered select-sm w-full">
+          <option value="">All</option>
+          <option value="spell">Spells</option>
+          <option value="monster">Monsters</option>
+          <option value="equipment">Equipment</option>
+          <option value="feature">Features</option>
+        </select>
+        <div id="mobile-spell-filters" class="mobile-filter-row" style="display:none;">
+          <select id="mobile-spell-level" class="select select-bordered select-sm flex-1">
+            <option value="">All Levels</option>
+            <option value="0">Cantrip</option>
+            <option value="1">1st</option><option value="2">2nd</option><option value="3">3rd</option>
+            <option value="4">4th</option><option value="5">5th</option><option value="6">6th</option>
+            <option value="7">7th</option><option value="8">8th</option><option value="9">9th</option>
+          </select>
+          <select id="mobile-spell-class" class="select select-bordered select-sm flex-1">
+            <option value="">All Classes</option>
+            <option value="bard">Bard</option><option value="cleric">Cleric</option>
+            <option value="druid">Druid</option><option value="paladin">Paladin</option>
+            <option value="ranger">Ranger</option><option value="sorcerer">Sorcerer</option>
+            <option value="warlock">Warlock</option><option value="wizard">Wizard</option>
+          </select>
+        </div>
+        <div id="mobile-monster-filters" class="mobile-filter-row" style="display:none;">
+          <select id="mobile-monster-type" class="select select-bordered select-sm flex-1"><option value="">All Types</option></select>
+          <select id="mobile-monster-cr" class="select select-bordered select-sm flex-1"><option value="">All CR</option></select>
+        </div>
+        <div id="mobile-feature-filters" class="mobile-filter-row" style="display:none;">
+          <select id="mobile-feature-source" class="select select-bordered select-sm w-full">
+            <option value="">All Sources</option>
+            <option value="class">Class Features</option>
+            <option value="species">Species Traits</option>
+            <option value="feat">Feats</option>
+          </select>
+        </div>
+      </div>
+      <div class="mobile-search-results" id="mobile-search-results">
+        <p class="top-bar-hint">Type to search spells, monsters, equipment, features…</p>
+      </div>
+    </div>
+  </dialog>
+
   <!-- Compendium Detail Modal -->
   <dialog id="compendium-modal" class="modal">
     <div class="modal-box">
