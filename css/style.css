@@ -150,15 +150,26 @@ button.btn-danger:hover {
   border-color: hsl(0 70% 44%);
 }
 
-/* Toggle thumb: white so it's always visible against the track */
+/* Session toggle — sized up and high-contrast in both states.
+   In DaisyUI's toggle, `currentColor` paints the track and `--tglbg` paints
+   the thumb. The off state needs an explicit gray track so the white thumb
+   stays visible (otherwise both pick up the sidebar's pale text color). */
 #session-toggle {
-  --tglbg: rgba(255, 255, 255, 0.9);
+  height: 1.6rem;
+  width: 3rem;
+  --handleoffset: 1.4rem;
+  color: hsl(0, 0%, 55%) !important;
+  background-color: hsl(0, 0%, 55%) !important;
+  border-color: hsl(0, 0%, 35%) !important;
+  --tglbg: #ffffff;
 }
 #session-toggle:checked {
-  --tglbg: rgba(255, 255, 255, 0.9);
-  background-color: var(--accent);
-  border-color: var(--accent);
+  color: var(--accent) !important;
+  background-color: var(--accent) !important;
+  border-color: hsl(0, 51%, 26%) !important;
+  --tglbg: #ffffff;
 }
+#session-toggle:hover { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08); }
 
 /* .btn-small is our existing name; map to DaisyUI btn-sm sizing */
 .btn.btn-small,
@@ -458,14 +469,8 @@ input[type="checkbox"]:not(.collapse > input):not(.toggle):hover {
 .tab-content { display: none; padding-top: 1rem; }
 .tab-content.active { display: block; }
 
-@media (max-width: 480px) {
-  .tabs { gap: 0.1rem; padding: 0.3rem 0.2rem; }
-  .tab {
-    font-size: 0.6rem !important;
-    padding: 0.3rem 0.45rem !important;
-    letter-spacing: 0;
-  }
-}
+/* Smallest-phone tab pill overrides live with the rest of the 480px
+   responsive rules near the bottom of this file. */
 
 /* ============================================================
    MODALS (DaisyUI <dialog> with DND theme overrides)
@@ -1233,22 +1238,65 @@ input[type="checkbox"]:not(.collapse > input):not(.toggle):hover {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 768px) {
-  .stat-grid { grid-template-columns: repeat(3, 1fr); }
+  .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
   .stat-row { grid-template-columns: repeat(3, 1fr); }
-  .combat-stats { gap: 0.5rem; }
   .form-row { grid-template-columns: 1fr 1fr; }
   .form-row-4col { grid-template-columns: 1fr 1fr; }
   .modal-body { max-height: calc(100dvh - 8rem); }
   .skills-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
-  .hp-btn { width: 38px; height: 38px; }
-  .hp-btn-sm { width: 32px; height: 32px; }
   /* prevent iOS zoom on focus */
   input, select, textarea { font-size: 16px; }
   .top-bar-title { display: none; }
+
+  /* Mobile component proportions: rebalance sizes that look oversized
+     when the viewport shrinks but the desktop type scale stays. */
+  .combat-stats { gap: 0.5rem; }
+  .combat-stat {
+    min-width: 0;
+    flex-basis: calc(50% - 0.25rem);
+    padding: 0.625rem 0.5rem;
+  }
+  .combat-stat .value { font-size: 1.4rem; }
+  .combat-stat .label { font-size: 0.62rem; }
+
+  .stat-box { padding: 0.5rem 0.2rem; }
+  .stat-mod { font-size: 1.2rem; }
+  .stat-value { font-size: 0.72rem; }
+  .stat-label { font-size: 0.62rem; }
+
+  .char-item { padding: 0.7rem 0.75rem; gap: 0.5rem; }
+  .char-name { font-size: 0.95rem; }
+  .char-meta { font-size: 0.78rem; }
+
+  .bf-card { padding: 0.7rem 0.75rem; }
+  .bf-name { font-size: 0.95rem; }
+  .bf-hp-text { font-size: 0.82rem; min-width: 60px; }
+  .bf-hp-bar-container { height: 12px; }
+
+  .item-card { padding: 0.7rem 0.875rem; }
+  .item-card h4 { font-size: 0.92rem; }
+
+  .hp-btn { width: 34px; height: 34px; font-size: 1rem; }
+  .hp-btn-sm { width: 28px; height: 28px; }
+
+  /* Tabs: keep readable on phones — slightly larger than the 480px override
+     and snug single-row scrolling instead of wrapping pills. */
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    font-size: 0.78rem !important;
+    padding: 0.4rem 0.85rem !important;
+  }
 }
 
 @media (max-width: 600px) {
-  .container { padding: 0 0.625rem 1.5rem; }
+  .container { padding: 0.5rem 0.75rem 1.5rem; }
   .stat-row { grid-template-columns: repeat(3, 1fr); }
   .form-row { grid-template-columns: 1fr; }
   .form-row-4col { grid-template-columns: 1fr 1fr; }
@@ -1284,9 +1332,41 @@ input[type="checkbox"]:not(.collapse > input):not(.toggle):hover {
   .eq-item-grid > .form-group:first-child {
     grid-column: 1 / -1;
   }
-  .navbar { gap: 0.5rem; }
+  .navbar { gap: 0.5rem; padding-left: 0.625rem; padding-right: 0.625rem; }
   /* Reduce DaisyUI card-body padding on mobile */
   .card-body { padding: 0.75rem !important; }
+
+  /* Cards sit flush to the gutter and lose hover lift effects that don't
+     apply on touch devices. Border-radius unifies with the smaller padding. */
+  .card { border-radius: 0.5rem; }
+  #shops-list > .card { padding: 0.7rem 0.75rem; }
+  .currency-row { gap: 0.35rem; }
+  .currency-row .form-group label { font-size: 0.65rem; }
+
+  /* Player join/pick cards align with the new container padding */
+  #step-join .card-body, #step-pick .card-body { padding: 0.875rem !important; }
+
+  .player-page-title { font-size: 1.25rem; padding: 0.75rem 0; }
+
+  /* Sidebar slightly narrower so it does not eat the whole viewport */
+  .menu-sidebar { width: 17.5rem !important; }
+  .sidebar-section { padding: 0.875rem 1rem; }
+  .sidebar-header { padding: 0.875rem 1rem; }
+}
+
+@media (max-width: 480px) {
+  .stat-grid { grid-template-columns: repeat(3, 1fr); gap: 0.35rem; }
+  .combat-stat { padding: 0.5rem 0.5rem; }
+  .combat-stat .value { font-size: 1.25rem; }
+  .item-card .meta { font-size: 0.78rem; }
+  .item-card .desc { font-size: 0.86rem; }
+  /* Tighter tab pills on the smallest phones to keep them readable on one row */
+  .tabs { gap: 0.2rem; padding: 0.3rem 0.35rem; }
+  .tab {
+    font-size: 0.72rem !important;
+    padding: 0.32rem 0.6rem !important;
+    letter-spacing: 0.02em !important;
+  }
 }
 
 /* ============================================================
