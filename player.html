@@ -54,6 +54,7 @@
         <button role="tab" id="tab-btn-stats" class="tab tab-active" data-tab="tab-stats" aria-selected="true" aria-controls="tab-stats">Stats</button>
         <button role="tab" id="tab-btn-equipment" class="tab" data-tab="tab-equipment" aria-selected="false" aria-controls="tab-equipment">Equipment</button>
         <button role="tab" id="tab-btn-spells" class="tab" data-tab="tab-spells" aria-selected="false" aria-controls="tab-spells">Spells</button>
+        <button role="tab" id="tab-btn-features" class="tab" data-tab="tab-features" aria-selected="false" aria-controls="tab-features">Features</button>
       </div>
 
       <!-- Stats Tab -->
@@ -65,8 +66,6 @@
         <div class="skills-grid" id="saving-throws-grid"></div>
         <h3 class="mt-4 mb-1">Skills <span id="prof-bonus-label" style="font-size:0.82rem;color:var(--text-muted);font-weight:normal;font-family:var(--font-body);"></span></h3>
         <div class="skills-grid" id="skills-grid"></div>
-        <h3 class="mt-4 mb-2">Features</h3>
-        <div class="features-list" id="features-list"></div>
       </div>
 
       <!-- Equipment Tab -->
@@ -79,6 +78,11 @@
         <div id="spellcasting-info"></div>
         <div id="spell-slots-display"></div>
         <div id="spells-display"></div>
+      </div>
+
+      <!-- Features Tab -->
+      <div role="tabpanel" class="tab-content" id="tab-features" aria-labelledby="tab-btn-features">
+        <div class="features-list" id="features-list"></div>
       </div>
 
     </div><!-- /#step-sheet -->
