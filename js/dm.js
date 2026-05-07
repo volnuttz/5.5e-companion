@@ -2031,14 +2031,18 @@ function saveBattlefieldPCIds() {
   db.putState('battlefieldPCs', battlefieldPCIds);
 }
 
-function toggleAddPCRow() {
-  const row = document.getElementById('bf-add-pc-row');
-  if (row.style.display !== 'none') { row.style.display = 'none'; return; }
+function openAddPCModal() {
   const available = allCharacters.filter(c => !battlefieldPCIds.includes(c._id));
   if (available.length === 0) { dialogAlert('All characters are already on the battlefield.', 'Info', 'info'); return; }
-  const select = document.getElementById('bf-add-pc-select');
-  select.innerHTML = available.map(c => `<option value="${c._id}">${esc(c.name)}</option>`).join('');
-  row.style.display = 'flex';
+  const list = document.getElementById('add-pc-list');
+  list.innerHTML = available.map(c => `
+    <li>
+      <button class="btn btn-secondary btn-small" style="width:100%;text-align:left;justify-content:flex-start;"
+        onclick="addPCToBattlefield('${esc(c._id)}')">
+        ${esc(c.name)} <span style="opacity:0.6;font-size:0.85em;margin-left:0.5rem;">${esc(c.class)} ${c.level}</span>
+      </button>
+    </li>`).join('');
+  document.getElementById('add-pc-modal').showModal();
 }
 
 function addPCToBattlefield(characterId) {
@@ -2052,7 +2056,7 @@ function addPCToBattlefield(characterId) {
   }
   saveBattlefieldPCIds();
   renderBattlefieldCharacters();
-  document.getElementById('bf-add-pc-row').style.display = 'none';
+  document.getElementById('add-pc-modal').close();
 }
 
 function removePCFromBattlefield(characterId) {

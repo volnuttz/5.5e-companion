@@ -104,12 +104,7 @@
             <div class="card-body">
               <div class="flex justify-end gap-2 mb-3">
                 <button class="btn btn-primary btn-small" id="btn-add-monsters">+ Add Monsters</button>
-                <button class="btn btn-secondary btn-small" onclick="toggleAddPCRow()">+ Add PC</button>
-              </div>
-              <div id="bf-add-pc-row" style="display:none;" class="flex gap-2 mb-3 items-center">
-                <select id="bf-add-pc-select" class="select select-sm select-bordered flex-1"></select>
-                <button class="btn btn-sm btn-primary" onclick="addPCToBattlefield(document.getElementById('bf-add-pc-select').value)">Add</button>
-                <button class="btn btn-sm btn-ghost" onclick="document.getElementById('bf-add-pc-row').style.display='none'">Cancel</button>
+                <button class="btn btn-secondary btn-small" onclick="openAddPCModal()">+ Add PC</button>
               </div>
               <div id="battlefield-list"></div>
               <div id="bf-characters-list"></div>
@@ -544,11 +539,23 @@
           <input type="text" id="monster-search" placeholder="Search monsters…">
           <select id="monster-type-filter"><option value="">All Types</option></select>
           <select id="monster-cr-filter"><option value="">All CR</option></select>
+          <button class="btn btn-secondary btn-small" style="white-space:nowrap;" onclick="document.getElementById('monster-search-modal').close(); addCustomMonster();">+ Add Custom</button>
         </div>
         <div id="monster-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
       </div>
-      <div class="modal-footer" style="padding-top:0.75rem;border-top:1px solid var(--border);margin-top:0.75rem;">
-        <button class="btn btn-secondary btn-small" onclick="document.getElementById('monster-search-modal').close(); addCustomMonster();">+ Add Custom</button>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button>close</button></form>
+  </dialog>
+
+  <!-- Add PC to Battlefield Modal -->
+  <dialog id="add-pc-modal" class="modal">
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-header">
+        <h2>Add PC to Battlefield</h2>
+        <button class="modal-close" onclick="document.getElementById('add-pc-modal').close()" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <ul id="add-pc-list" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0.5rem;"></ul>
       </div>
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
