@@ -255,13 +255,24 @@ function showDialog({ title, message, type = 'info', buttons = ['OK'] }) {
       return `<button class="${cls}" data-dialog-idx="${i}">${esc(label)}</button>`;
     }).join('');
 
+    const done = (result) => {
+      overlay.removeEventListener('cancel', onCancel);
+      overlay.close();
+      resolve(result);
+    };
+
+    const onCancel = (e) => {
+      e.preventDefault();
+      done(false);
+    };
+
     btnsEl.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => {
-        overlay.close();
-        resolve(btn.dataset.dialogIdx === String(buttons.length - 1));
+        done(btn.dataset.dialogIdx === String(buttons.length - 1));
       });
     });
 
+    overlay.addEventListener('cancel', onCancel);
     overlay.showModal();
   });
 }
@@ -1833,15 +1844,15 @@ function setupPeerHandlers() {
   });
 
   dmPeer.onSignalingReconnect(() => {
-    if (currentSession) setSessionPill(`Session active (PIN: ${currentSession.pin})`, true);
+    if (currentSession) updatePeerStatus();
   });
 }
 
 function updatePeerStatus() {
-  const el = document.getElementById('peer-status');
-  if (!dmPeer) { el.textContent = ''; return; }
-  const players = dmPeer.getConnectedPlayers();
-  el.textContent = `${players.length} player${players.length !== 1 ? 's' : ''} connected`;
+  if (!currentSession) return;
+  const players = dmPeer ? dmPeer.getConnectedPlayers() : [];
+  const count = players.length;
+  setSessionPill(`Session active (PIN: ${currentSession.pin}) · ${count} player${count !== 1 ? 's' : ''}`, true);
 }
 
 function setSessionPill(text, active) {
@@ -1853,7 +1864,7 @@ function setSessionPill(text, active) {
 }
 
 function showSessionActive() {
-  setSessionPill(`Session active (PIN: ${currentSession.pin})`, true);
+  updatePeerStatus();
   document.getElementById('btn-new-session').style.display = 'none';
   document.getElementById('btn-show-qr').style.display = '';
   document.getElementById('btn-end-session').style.display = '';
@@ -1868,7 +1879,6 @@ async function endSession() {
   document.getElementById('btn-new-session').style.display = '';
   document.getElementById('btn-show-qr').style.display = 'none';
   document.getElementById('btn-end-session').style.display = 'none';
-  updatePeerStatus();
   renderBattlefieldCharacters();
 }
 
