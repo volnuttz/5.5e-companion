@@ -2354,7 +2354,7 @@ function drawBattlefieldCharacters() {
           <strong>${esc(c.name)}</strong>
           <span style="color:var(--text-muted);font-size:0.8rem;">Lvl ${c.level} ${esc(c.species || '')} ${esc(c.class)} | AC ${c.AC}</span>
           ${playerLabel}
-          <button class="hp-btn hp-btn-sm" onclick="removePCFromBattlefield('${c._id}')" title="Remove from battlefield" style="margin-left:auto;font-size:0.7rem;padding:0 6px;">✕</button>
+          <button class="remove-item" onclick="removePCFromBattlefield('${c._id}')" title="Remove from battlefield">&times;</button>
         </div>
         <div class="bf-hp-row">
           <button class="hp-btn" onclick="charHP('${c._id}', -1, ${c.HP})">−</button>
@@ -2889,6 +2889,15 @@ function updateCustomTreasure(idx, field, value) {
   saveTreasures();
 }
 
+function finishCustomTreasure(idx) {
+  const item = treasurePool[idx];
+  if (!item) return;
+  if (!item.name.trim()) { dialogAlert('Please enter an item name.', 'Custom Item', 'info'); return; }
+  item._editing = false;
+  renderTreasures();
+  saveTreasures();
+}
+
 function addToTreasures(idx, el) {
   const resultsEl = document.getElementById('treasure-results');
   const e = resultsEl._filtered[idx];
@@ -2939,11 +2948,7 @@ function renderTreasures() {
           <div class="form-group" style="flex:1 1 100%;margin:0;"><label>Description</label><input type="text" value="${esc(item.description)}" placeholder="Damage, properties, etc." onchange="updateCustomTreasure(${idx},'description',this.value)"></div>
         </div>
         <div class="item-actions" style="display:flex;align-items:center;gap:6px;">
-          <select id="treasure-assign-${idx}" style="padding:4px 8px;background:var(--bg-input);color:var(--text);border:1px solid var(--border);border-radius:4px;font-size:0.85rem;">
-            <option value="">Assign to...</option>
-            ${charOptions}
-          </select>
-          <button type="button" class="btn btn-primary btn-small" onclick="assignTreasure(${idx})">Assign</button>
+          <button type="button" class="btn btn-primary btn-small" onclick="finishCustomTreasure(${idx})">Done</button>
           <button type="button" class="remove-item" onclick="removeFromTreasures(${idx})">&times;</button>
         </div>
       </div>`;
@@ -3090,6 +3095,11 @@ function addCustomShopItem(shopIdx) {
   if (inputs.length) inputs[inputs.length - 1].focus();
 }
 
+function addCustomShopItemFromModal() {
+  if (_activeShopIdx < 0 || !shops[_activeShopIdx]) return;
+  addCustomShopItem(_activeShopIdx);
+}
+
 function removeShopItem(shopIdx, itemIdx) { shops[shopIdx].items.splice(itemIdx, 1); renderShops(); saveShops(); }
 
 function updateShopItem(shopIdx, itemIdx, field, value) {
@@ -3098,6 +3108,15 @@ function updateShopItem(shopIdx, itemIdx, field, value) {
   if (field === 'price') item.price = Math.max(0, parseInt(value) || 0);
   else if (field === 'quantity') item.quantity = parseInt(value) || -1;
   else item[field] = value;
+  saveShops();
+}
+
+function finishCustomShopItem(shopIdx, itemIdx) {
+  const item = shops[shopIdx]?.items[itemIdx];
+  if (!item) return;
+  if (!item.name.trim()) { dialogAlert('Please enter an item name.', 'Custom Item', 'info'); return; }
+  item._editing = false;
+  renderShops();
   saveShops();
 }
 
@@ -3117,16 +3136,20 @@ function renderShops() {
   container.innerHTML = shops.map((shop, si) => {
     const itemsHtml = shop.items.map((item, ii) => {
       if (item._editing) {
-        return `<div class="list-item" style="flex-wrap:wrap;padding:8px 12px;gap:6px;">
+        return `<div class="list-item" style="flex-wrap:wrap;padding:8px 12px;gap:6px;border-left:3px solid var(--gold);">
             <div class="form-group" style="flex:2;margin:0;"><input type="text" class="shop-item-name" value="${esc(item.name)}" placeholder="Item name" onchange="updateShopItem(${si},${ii},'name',this.value)"></div>
+            <div class="form-group" style="flex:1;margin:0;min-width:100px;"><input type="text" value="${esc(item.type)}" placeholder="Type" onchange="updateShopItem(${si},${ii},'type',this.value)"></div>
             <div class="form-group" style="flex:0 0 70px;margin:0;"><input type="number" value="${item.price}" min="0" style="width:100%;" onchange="updateShopItem(${si},${ii},'price',this.value)"></div>
             <div class="form-group" style="flex:0 0 70px;margin:0;">
               <select onchange="updateShopItem(${si},${ii},'denomination',this.value)" style="width:100%;">
                 ${['CP','SP','EP','GP','PP'].map(d => `<option value="${d}" ${item.denomination === d ? 'selected' : ''}>${d}</option>`).join('')}
               </select>
             </div>
-            <div class="form-group" style="flex:2;margin:0;"><input type="text" value="${esc(item.description)}" placeholder="Description" onchange="updateShopItem(${si},${ii},'description',this.value)"></div>
-            <button type="button" class="remove-item" onclick="removeShopItem(${si},${ii})">&times;</button>
+            <div class="form-group" style="flex:1 1 100%;margin:0;"><input type="text" value="${esc(item.description)}" placeholder="Description" onchange="updateShopItem(${si},${ii},'description',this.value)"></div>
+            <div class="item-actions" style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+              <button type="button" class="btn btn-primary btn-small" onclick="finishCustomShopItem(${si},${ii})">Done</button>
+              <button type="button" class="remove-item" onclick="removeShopItem(${si},${ii})">&times;</button>
+            </div>
           </div>`;
       }
       return `<div class="list-item" style="flex-wrap:wrap;align-items:center;padding:8px 12px;gap:6px;">
@@ -3161,7 +3184,6 @@ function renderShops() {
         </div>
         <div style="display:flex;gap:8px;margin-top:8px;">
           <button type="button" class="btn btn-primary btn-small" onclick="openShopItemModal(${si})">+ Add Items</button>
-          <button type="button" class="btn btn-secondary btn-small" onclick="addCustomShopItem(${si})">+ Add Custom</button>
         </div>
       </div>`;
   }).join('');

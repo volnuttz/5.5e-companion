@@ -120,7 +120,6 @@
             <div class="card-body">
               <div class="flex justify-end gap-2 mb-3">
                 <button class="btn btn-primary btn-small" id="btn-add-items">+ Add Items</button>
-                <button class="btn btn-secondary btn-small" onclick="addCustomTreasure()">+ Add Custom</button>
               </div>
               <div id="treasure-list"></div>
               <p id="treasure-empty" class="empty-state">No items in the treasure pool. Use "Add Items" to pick from the SRD, or "+ Add Custom" for homebrew loot.</p>
@@ -589,6 +588,7 @@
             <option value="Armor">Armor</option>
             <option value="Item">Items</option>
           </select>
+          <button class="btn btn-secondary btn-small" style="white-space:nowrap;" onclick="document.getElementById('treasure-search-modal').close(); addCustomTreasure();">+ Add Custom</button>
         </div>
         <div id="treasure-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
       </div>
@@ -612,6 +612,7 @@
             <option value="Armor">Armor</option>
             <option value="Item">Items</option>
           </select>
+          <button class="btn btn-secondary btn-small" style="white-space:nowrap;" onclick="document.getElementById('shop-search-modal').close(); addCustomShopItemFromModal();">+ Add Custom</button>
         </div>
         <div id="shop-item-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
       </div>
