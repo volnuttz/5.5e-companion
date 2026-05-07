@@ -467,7 +467,7 @@ input[type="checkbox"]:not(.collapse > input):hover {
   font-weight: 700;
 }
 
-.tab-content { display: none; padding-top: 1.25rem; }
+.tab-content { display: none; padding-top: 1rem; }
 .tab-content.active { display: block; }
 
 /* ============================================================
@@ -766,7 +766,7 @@ input[type="checkbox"]:not(.collapse > input):hover {
    need explicit padding via the parent container selector.
    ============================================================ */
 .card {
-  border-top: 2px solid hsl(0, 0%, 75%);
+  border-top: 2px solid hsl(0, 51%, 36%);
   transition: box-shadow 0.15s;
 }
 .card:hover {
@@ -830,7 +830,7 @@ input[type="checkbox"]:not(.collapse > input):hover {
   transition: border-left-color 0.15s, box-shadow 0.15s, transform 0.1s;
 }
 .char-item:hover {
-  border-left-color: hsl(0, 0%, 30%);
+  border-left-color: hsl(0, 51%, 36%);
   box-shadow: var(--shadow-md);
   transform: translateX(2px);
 }
@@ -1011,6 +1011,7 @@ input[type="checkbox"]:not(.collapse > input):hover {
   min-width: 120px;
   background: var(--bg-card);
   border: 1px solid var(--border);
+  border-top: 2px solid hsl(0, 51%, 36%);
   border-radius: var(--radius);
   padding: 0.875rem 1rem;
   text-align: center;
@@ -1083,6 +1084,13 @@ input[type="checkbox"]:not(.collapse > input):hover {
 .slot-bubble input:checked + .slot-circle {
   background: hsl(0, 0%, 30%);
   box-shadow: 0 0 7px hsla(0, 0%, 30%, 0.55);
+}
+
+@media (max-width: 768px) {
+  .slot-circle {
+    width: 36px;
+    height: 36px;
+  }
 }
 
 /* ============================================================
@@ -1167,6 +1175,59 @@ input[type="checkbox"]:not(.collapse > input):hover {
 }
 
 /* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* ============================================================
+   SESSION STATUS PILL
+   ============================================================ */
+.session-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 99px;
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border: 1px solid transparent;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.session-pill::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.session-pill.pill-inactive {
+  background: hsl(0, 0%, 90%);
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+.session-pill.pill-inactive::before {
+  background: hsl(0, 0%, 65%);
+}
+.session-pill.pill-active {
+  background: hsl(153, 30%, 90%);
+  color: hsl(153, 47%, 28%);
+  border-color: hsl(153, 35%, 75%);
+}
+.session-pill.pill-active::before {
+  background: hsl(142, 60%, 45%);
+  box-shadow: 0 0 5px hsl(142, 70%, 50%);
+}
+
+/* ============================================================
    SRD FOOTER
    ============================================================ */
 .srd-footer {
@@ -1189,6 +1250,18 @@ input[type="checkbox"]:not(.collapse > input):hover {
   text-align: center;
   padding: 0.5rem 0 0.25rem;
   color: var(--text-muted) !important;
+}
+
+/* ============================================================
+   PLAYER PAGE TITLE
+   ============================================================ */
+.player-page-title {
+  font-family: var(--font-heading);
+  color: var(--accent);
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 1.25rem 0;
 }
 
 /* ============================================================
@@ -1258,6 +1331,42 @@ input[type="checkbox"]:not(.collapse > input):hover {
   .navbar { gap: 0.5rem; }
   /* Reduce DaisyUI card-body padding on mobile */
   .card-body { padding: 0.75rem !important; }
+}
+
+/* ============================================================
+   NOTES TEXTAREA
+   ============================================================ */
+#notes-editor {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  resize: vertical;
+  line-height: 1.6;
+  min-height: max(500px, calc(100dvh - 280px));
+}
+
+/* ============================================================
+   MODAL CLOSE BUTTON — consistent × across all modals
+   ============================================================ */
+.modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+}
+.modal-close:hover {
+  background: hsl(0, 0%, 90%);
+  color: var(--text);
 }
 
 /* ============================================================

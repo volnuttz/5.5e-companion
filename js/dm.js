@@ -1828,17 +1828,11 @@ function setupPeerHandlers() {
 
   // Show a notice in the session status if the DM loses signaling server connectivity.
   dmPeer.onSignalingDisconnect(() => {
-    const el = document.getElementById('session-status');
-    if (el && currentSession) {
-      el.textContent = `Session active (PIN: ${currentSession.pin}) — reconnecting…`;
-    }
+    if (currentSession) setSessionPill(`Session active (PIN: ${currentSession.pin}) — reconnecting…`, true);
   });
 
   dmPeer.onSignalingReconnect(() => {
-    const el = document.getElementById('session-status');
-    if (el && currentSession) {
-      el.textContent = `Session active (PIN: ${currentSession.pin})`;
-    }
+    if (currentSession) setSessionPill(`Session active (PIN: ${currentSession.pin})`, true);
   });
 }
 
@@ -1849,8 +1843,16 @@ function updatePeerStatus() {
   el.textContent = `${players.length} player${players.length !== 1 ? 's' : ''} connected`;
 }
 
+function setSessionPill(text, active) {
+  const el = document.getElementById('session-status');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('pill-active', active);
+  el.classList.toggle('pill-inactive', !active);
+}
+
 function showSessionActive() {
-  document.getElementById('session-status').textContent = `Session active (PIN: ${currentSession.pin})`;
+  setSessionPill(`Session active (PIN: ${currentSession.pin})`, true);
   document.getElementById('btn-new-session').style.display = 'none';
   document.getElementById('btn-show-qr').style.display = '';
   document.getElementById('btn-end-session').style.display = '';
@@ -1861,7 +1863,7 @@ async function endSession() {
   if (!await dialogConfirm('End the current session? Players will be disconnected.', 'End Session')) return;
   if (dmPeer) { dmPeer.destroy(); dmPeer = null; }
   currentSession = null;
-  document.getElementById('session-status').textContent = 'No active session';
+  setSessionPill('No active session', false);
   document.getElementById('btn-new-session').style.display = '';
   document.getElementById('btn-show-qr').style.display = 'none';
   document.getElementById('btn-end-session').style.display = 'none';
