@@ -115,10 +115,10 @@
         <div role="tabpanel" class="tab-content" id="dm-tab-battlefield" aria-labelledby="tab-btn-battlefield">
           <div class="card card-compact bg-base-100 shadow-md">
             <div class="card-body">
-              <div class="flex justify-end gap-2 mb-3">
+              <div class="flex flex-wrap justify-end gap-2 mb-3">
                 <button class="btn btn-primary btn-small" id="btn-add-monsters">Add Monsters</button>
-                <button class="btn btn-secondary btn-small" onclick="addCustomMonster()">+ Add Custom</button>
                 <button class="btn btn-secondary btn-small" onclick="toggleAddPCRow()">+ Add PC</button>
+                <button class="btn btn-secondary btn-small" onclick="addCustomMonster()">+ Add Custom</button>
               </div>
               <div id="bf-add-pc-row" style="display:none;" class="flex gap-2 mb-3 items-center">
                 <select id="bf-add-pc-select" class="select select-sm select-bordered flex-1"></select>
@@ -128,7 +128,7 @@
               <div id="battlefield-list"></div>
               <div id="bf-characters-list"></div>
               <p id="battlefield-empty" class="empty-state">No monsters on the battlefield. Use "Add Monsters" to search the SRD, or "+ Add Custom" for homebrew creatures.</p>
-              <p id="bf-characters-empty" class="empty-state">No active session. Start a session to track character HP.</p>
+              <p id="bf-characters-empty" class="empty-state">No characters on the battlefield yet.</p>
             </div>
           </div>
         </div>

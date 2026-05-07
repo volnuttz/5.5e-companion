@@ -34,6 +34,7 @@ let selectedFeatures = [];
 let allEquipment = [];
 let allMonsters = [];
 let battlefieldMonsters = [];
+let battlefieldPCIds = [];
 let treasurePool = [];
 let allCharacters = [];
 let shops = [];
@@ -1708,10 +1709,9 @@ async function createSession() {
 
   // Build session characters from all characters
   const chars = await db.getAllCharacters();
-  const savedPCIds = (await db.getState('battlefieldPCs')) || [];
   const characters = {};
   chars.forEach(c => {
-    characters[c._id] = { claimedBy: null, onBattlefield: savedPCIds.includes(c._id) };
+    characters[c._id] = { claimedBy: null, onBattlefield: battlefieldPCIds.includes(c._id) };
   });
   currentSession = { pin, characters };
 
@@ -1781,6 +1781,7 @@ function setupPeerHandlers() {
       }
       charEntry.claimedBy = playerName;
       charEntry.onBattlefield = true;
+      if (!battlefieldPCIds.includes(characterId)) battlefieldPCIds.push(characterId);
       saveBattlefieldPCIds();
       dmPeer.setPlayerInfo(peerId, playerName, characterId);
 
@@ -1969,6 +1970,7 @@ function filterMonsters() {
 async function loadBattlefield() {
   try {
     const saved = await db.getBattlefield();
+    battlefieldPCIds = (await db.getState('battlefieldPCs')) || [];
     battlefieldMonsters = [];
     saved.forEach(entry => {
       if (entry._custom) {
@@ -2004,18 +2006,13 @@ function saveBattlefield() {
 }
 
 function saveBattlefieldPCIds() {
-  if (!currentSession) return;
-  const ids = Object.keys(currentSession.characters)
-    .filter(id => currentSession.characters[id].onBattlefield);
-  db.putState('battlefieldPCs', ids);
+  db.putState('battlefieldPCs', battlefieldPCIds);
 }
 
 function toggleAddPCRow() {
   const row = document.getElementById('bf-add-pc-row');
   if (row.style.display !== 'none') { row.style.display = 'none'; return; }
-  if (!currentSession) { dialogAlert('Start a session first.', 'No Session', 'info'); return; }
-  const sessionChars = currentSession.characters;
-  const available = allCharacters.filter(c => !sessionChars[c._id]?.onBattlefield);
+  const available = allCharacters.filter(c => !battlefieldPCIds.includes(c._id));
   if (available.length === 0) { dialogAlert('All characters are already on the battlefield.', 'Info', 'info'); return; }
   const select = document.getElementById('bf-add-pc-select');
   select.innerHTML = available.map(c => `<option value="${c._id}">${esc(c.name)}</option>`).join('');
@@ -2023,20 +2020,25 @@ function toggleAddPCRow() {
 }
 
 function addPCToBattlefield(characterId) {
-  if (!currentSession || !characterId) return;
-  if (!currentSession.characters[characterId]) {
-    currentSession.characters[characterId] = { claimedBy: null, onBattlefield: false };
+  if (!characterId) return;
+  if (!battlefieldPCIds.includes(characterId)) battlefieldPCIds.push(characterId);
+  if (currentSession) {
+    if (!currentSession.characters[characterId]) {
+      currentSession.characters[characterId] = { claimedBy: null, onBattlefield: false };
+    }
+    currentSession.characters[characterId].onBattlefield = true;
   }
-  currentSession.characters[characterId].onBattlefield = true;
   saveBattlefieldPCIds();
   renderBattlefieldCharacters();
   document.getElementById('bf-add-pc-row').style.display = 'none';
 }
 
 function removePCFromBattlefield(characterId) {
-  if (!currentSession || !currentSession.characters[characterId]) return;
-  currentSession.characters[characterId].onBattlefield = false;
-  currentSession.characters[characterId].claimedBy = null;
+  battlefieldPCIds = battlefieldPCIds.filter(id => id !== characterId);
+  if (currentSession && currentSession.characters[characterId]) {
+    currentSession.characters[characterId].onBattlefield = false;
+    currentSession.characters[characterId].claimedBy = null;
+  }
   saveBattlefieldPCIds();
   renderBattlefieldCharacters();
 }
@@ -2272,17 +2274,7 @@ async function renderBattlefieldCharacters() {
   const container = document.getElementById('bf-characters-list');
   const emptyMsg = document.getElementById('bf-characters-empty');
 
-  if (!currentSession) {
-    bfCharactersCache = [];
-    container.innerHTML = '';
-    emptyMsg.style.display = '';
-    emptyMsg.textContent = 'No active session. Start a session to track character HP.';
-    return;
-  }
-
-  const sessionChars = currentSession.characters || {};
-  const charIds = Object.keys(sessionChars).filter(id => sessionChars[id].onBattlefield);
-  if (charIds.length === 0) {
+  if (battlefieldPCIds.length === 0) {
     bfCharactersCache = [];
     container.innerHTML = '';
     emptyMsg.style.display = '';
@@ -2291,7 +2283,7 @@ async function renderBattlefieldCharacters() {
   }
 
   const characters = [];
-  for (const id of charIds) {
+  for (const id of battlefieldPCIds) {
     const c = await db.getCharacter(id);
     if (c) characters.push(c);
   }
@@ -2327,7 +2319,9 @@ function drawBattlefieldCharacters() {
     const sessionEntry = currentSession && currentSession.characters[c._id];
     const playerLabel = sessionEntry?.claimedBy
       ? `<span style="color:var(--accent);font-size:0.75rem;">${esc(sessionEntry.claimedBy)}</span>`
-      : `<span style="color:var(--text-muted);font-size:0.75rem;">(no player)</span>`;
+      : currentSession
+        ? `<span style="color:var(--text-muted);font-size:0.75rem;">(no player)</span>`
+        : '';
     return `
       <div class="bf-card" data-char-hp-id="${c._id}">
         <div class="bf-header">
