@@ -419,6 +419,8 @@ input[type="checkbox"]:not(.collapse > input):hover {
   overflow-x: auto;
   background: var(--bg-card);
   scrollbar-width: none;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
 }
 .tabs::-webkit-scrollbar { display: none; }
 
