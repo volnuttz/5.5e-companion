@@ -81,7 +81,7 @@
         <!-- Session Bar -->
         <div class="session-bar">
           <div class="flex items-center gap-2">
-            <span id="session-status">No active session</span>
+            <span id="session-status" class="session-pill pill-inactive">No active session</span>
           </div>
           <div class="flex gap-2">
             <button class="btn btn-primary btn-small" id="btn-new-session">Start Session</button>
@@ -118,17 +118,17 @@
               <div class="flex justify-end gap-2 mb-3">
                 <button class="btn btn-primary btn-small" id="btn-add-monsters">Add Monsters</button>
                 <button class="btn btn-secondary btn-small" onclick="addCustomMonster()">+ Add Custom</button>
-                <button class="btn btn-accent btn-small" onclick="toggleAddPCRow()">+ Add PC</button>
+                <button class="btn btn-secondary btn-small" onclick="toggleAddPCRow()">+ Add PC</button>
               </div>
-              <div id="bf-add-pc-row" style="display:none;" class="flex gap-2 mb-3 align-items-center">
+              <div id="bf-add-pc-row" style="display:none;" class="flex gap-2 mb-3 items-center">
                 <select id="bf-add-pc-select" class="select select-sm select-bordered flex-1"></select>
                 <button class="btn btn-sm btn-primary" onclick="addPCToBattlefield(document.getElementById('bf-add-pc-select').value)">Add</button>
                 <button class="btn btn-sm btn-ghost" onclick="document.getElementById('bf-add-pc-row').style.display='none'">Cancel</button>
               </div>
               <div id="battlefield-list"></div>
               <div id="bf-characters-list"></div>
-              <p id="battlefield-empty" style="color:var(--text-muted);font-size:0.9rem;">No monsters on the battlefield. Use "Add Monsters" to search the SRD, or "+ Add Custom" for homebrew creatures.</p>
-              <p id="bf-characters-empty" style="color:var(--text-muted);font-size:0.9rem;">No active session. Start a session to track character HP.</p>
+              <p id="battlefield-empty" class="empty-state">No monsters on the battlefield. Use "Add Monsters" to search the SRD, or "+ Add Custom" for homebrew creatures.</p>
+              <p id="bf-characters-empty" class="empty-state">No active session. Start a session to track character HP.</p>
             </div>
           </div>
         </div>
@@ -142,7 +142,7 @@
                 <button class="btn btn-secondary btn-small" onclick="addCustomTreasure()">+ Add Custom</button>
               </div>
               <div id="treasure-list"></div>
-              <p id="treasure-empty" style="color:var(--text-muted);font-size:0.9rem;">No items in the treasure pool. Use "Add Items" to pick from the SRD, or "+ Add Custom" for homebrew loot.</p>
+              <p id="treasure-empty" class="empty-state">No items in the treasure pool. Use "Add Items" to pick from the SRD, or "+ Add Custom" for homebrew loot.</p>
             </div>
           </div>
         </div>
@@ -154,7 +154,7 @@
               <div class="flex justify-end mb-3">
                 <button class="btn btn-primary btn-small" id="btn-create-shop">+ New Shop</button>
               </div>
-              <p id="shops-empty" style="color:var(--text-muted);font-size:0.9rem;">No shops created. Click "+ New Shop" to get started.</p>
+              <p id="shops-empty" class="empty-state">No shops created. Click "+ New Shop" to get started.</p>
               <div id="shops-list"></div>
             </div>
           </div>
@@ -171,7 +171,6 @@
                 id="notes-editor"
                 placeholder="Write your session notes here…"
                 class="textarea textarea-bordered w-full"
-                style="min-height:500px;font-family:var(--font-body);font-size:1rem;resize:vertical;line-height:1.6;"
               ></textarea>
             </div>
           </div>
@@ -234,7 +233,7 @@
     <div class="modal-box" style="max-width:420px;text-align:center;">
       <div class="modal-header">
         <h2>Session QR Code</h2>
-        <button class="btn btn-sm btn-circle btn-ghost" onclick="document.getElementById('qr-modal').close()">✕</button>
+        <button class="modal-close" onclick="document.getElementById('qr-modal').close()" aria-label="Close">✕</button>
       </div>
       <div class="qr-container modal-body">
         <canvas id="qr-canvas" role="img" aria-label="Session QR code"></canvas>
@@ -253,7 +252,7 @@
     <div class="modal-box mobile-search-box">
       <div class="mobile-search-header">
         <input type="text" id="mobile-search-input" class="input input-bordered w-full" placeholder="Search compendium…" autocomplete="off">
-        <button class="btn btn-sm btn-ghost btn-circle" onclick="closeMobileSearchModal()">✕</button>
+        <button class="modal-close" onclick="closeMobileSearchModal()" aria-label="Close">✕</button>
       </div>
       <div class="mobile-search-filters">
         <select id="mobile-compendium-category" class="select select-bordered select-sm w-full">
@@ -303,7 +302,7 @@
     <div class="modal-box">
       <div class="modal-header">
         <h2 id="compendium-modal-title"></h2>
-        <button class="btn btn-sm btn-circle btn-ghost" onclick="document.getElementById('compendium-modal').close()">✕</button>
+        <button class="modal-close" onclick="document.getElementById('compendium-modal').close()" aria-label="Close">✕</button>
       </div>
       <div id="compendium-modal-body" class="modal-body"></div>
     </div>
@@ -315,7 +314,7 @@
     <div class="modal-box" style="max-width:760px;">
       <div class="modal-header">
         <h2 id="char-modal-title">New Character</h2>
-        <button class="btn btn-sm btn-circle btn-ghost" onclick="closeCharModal()">✕</button>
+        <button class="modal-close" onclick="closeCharModal()" aria-label="Close">✕</button>
       </div>
       <form id="char-form" class="modal-body">
         <input type="hidden" id="char-edit-id">
@@ -530,7 +529,7 @@
     <div class="modal-box" style="max-width:600px;">
       <div class="modal-header">
         <h2 id="levelup-title">Level Up</h2>
-        <button class="btn btn-sm btn-circle btn-ghost" onclick="document.getElementById('levelup-modal').close()">✕</button>
+        <button class="modal-close" onclick="document.getElementById('levelup-modal').close()" aria-label="Close">✕</button>
       </div>
       <div class="modal-body" id="levelup-body"></div>
     </div>
@@ -542,7 +541,7 @@
     <div class="modal-box">
       <div class="modal-header">
         <h2>Add Monsters</h2>
-        <button class="btn btn-sm btn-circle btn-ghost" onclick="document.getElementById('monster-search-modal').close()">✕</button>
+        <button class="modal-close" onclick="document.getElementById('monster-search-modal').close()" aria-label="Close">✕</button>
       </div>
       <div class="modal-body">
         <div class="search-bar">
@@ -561,7 +560,7 @@
     <div class="modal-box">
       <div class="modal-header">
         <h2 id="monster-modal-title">Monster</h2>
-        <button class="btn btn-sm btn-circle btn-ghost" onclick="document.getElementById('monster-modal').close()">✕</button>
+        <button class="modal-close" onclick="document.getElementById('monster-modal').close()" aria-label="Close">✕</button>
       </div>
       <div id="monster-stat-block" class="modal-body"></div>
     </div>
@@ -573,7 +572,7 @@
     <div class="modal-box">
       <div class="modal-header">
         <h2>Add Items</h2>
-        <button class="btn btn-sm btn-circle btn-ghost" onclick="document.getElementById('treasure-search-modal').close()">✕</button>
+        <button class="modal-close" onclick="document.getElementById('treasure-search-modal').close()" aria-label="Close">✕</button>
       </div>
       <div class="modal-body">
         <div class="search-bar">
@@ -596,7 +595,7 @@
     <div class="modal-box">
       <div class="modal-header">
         <h2>Add Shop Items</h2>
-        <button class="btn btn-sm btn-circle btn-ghost" onclick="document.getElementById('shop-search-modal').close()">✕</button>
+        <button class="modal-close" onclick="document.getElementById('shop-search-modal').close()" aria-label="Close">✕</button>
       </div>
       <div class="modal-body">
         <div class="search-bar">
@@ -621,7 +620,7 @@
         <h2>Character Preview</h2>
         <div style="display:flex;gap:8px;align-items:center;">
           <button class="btn btn-secondary btn-sm" onclick="copyCurrentPreviewLink()">Copy share link</button>
-          <button class="btn btn-sm btn-circle btn-ghost" onclick="document.getElementById('char-preview-modal').close()">✕</button>
+          <button class="modal-close" onclick="document.getElementById('char-preview-modal').close()" aria-label="Close">✕</button>
         </div>
       </div>
       <iframe id="char-preview-iframe" class="w-full mt-2" style="height:calc(100vh - 220px);border:1px solid var(--border);"></iframe>
