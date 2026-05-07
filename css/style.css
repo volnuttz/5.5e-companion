@@ -151,14 +151,10 @@ button.btn-danger:hover {
 }
 
 /* Start Session: forest green — signals a positive action, distinct from crimson tabs */
-#btn-new-session {
-  background-color: hsl(150, 45%, 28%) !important;
-  border-color: hsl(150, 45%, 20%) !important;
-  color: #fff !important;
-}
-#btn-new-session:hover {
-  background-color: hsl(150, 45%, 34%) !important;
-  border-color: hsl(150, 45%, 28%) !important;
+#session-toggle:checked {
+  --tglbg: var(--accent);
+  background-color: var(--accent);
+  border-color: var(--accent);
 }
 
 /* .btn-small is our existing name; map to DaisyUI btn-sm sizing */

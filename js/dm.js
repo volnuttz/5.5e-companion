@@ -49,9 +49,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderSkillInputs();
   updateAbilityModBadges();
 
-  document.getElementById('btn-new-session').addEventListener('click', createSession);
+  document.getElementById('session-toggle').addEventListener('change', handleSessionToggle);
   document.getElementById('btn-show-qr').addEventListener('click', showQR);
-  document.getElementById('btn-end-session').addEventListener('click', endSession);
   document.getElementById('btn-add-char').addEventListener('click', () => openCharModal());
   document.getElementById('char-form').addEventListener('submit', saveCharacter);
 
@@ -1737,6 +1736,7 @@ async function createSession() {
   } catch (err) {
     dialogAlert('Failed to start session: ' + err.message, 'Session Error', 'error');
     currentSession = null;
+    document.getElementById('session-toggle').checked = false;
   }
 }
 
@@ -1865,21 +1865,33 @@ function setSessionPill(text, active) {
 
 function showSessionActive() {
   updatePeerStatus();
-  document.getElementById('btn-new-session').style.display = 'none';
+  document.getElementById('session-toggle').checked = true;
   document.getElementById('btn-show-qr').style.display = '';
-  document.getElementById('btn-end-session').style.display = '';
   renderBattlefieldCharacters();
 }
 
 async function endSession() {
-  if (!await dialogConfirm('End the current session? Players will be disconnected.', 'End Session')) return;
+  if (!await dialogConfirm('End the current session? Players will be disconnected.', 'End Session')) {
+    document.getElementById('session-toggle').checked = true;
+    return;
+  }
   if (dmPeer) { dmPeer.destroy(); dmPeer = null; }
   currentSession = null;
   setSessionPill('No active session', false);
-  document.getElementById('btn-new-session').style.display = '';
+  document.getElementById('session-toggle').checked = false;
   document.getElementById('btn-show-qr').style.display = 'none';
-  document.getElementById('btn-end-session').style.display = 'none';
   renderBattlefieldCharacters();
+}
+
+async function handleSessionToggle() {
+  const toggle = document.getElementById('session-toggle');
+  if (toggle.checked) {
+    toggle.checked = false; // showSessionActive will re-check on success
+    await createSession();
+  } else {
+    toggle.checked = true; // endSession will uncheck if confirmed
+    await endSession();
+  }
 }
 
 async function showQR() {

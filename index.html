@@ -82,10 +82,12 @@
           <div class="flex items-center gap-2">
             <span id="session-status" class="session-pill pill-inactive">No active session</span>
           </div>
-          <div class="flex gap-2">
-            <button class="btn btn-primary btn-small" id="btn-new-session">Start Session</button>
+          <div class="flex gap-2 items-center">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <span class="text-sm font-semibold" style="color:var(--text-muted);">Share Session</span>
+              <input type="checkbox" id="session-toggle" class="toggle toggle-sm" />
+            </label>
             <button class="btn btn-secondary btn-small" id="btn-show-qr" style="display:none;">Show QR</button>
-            <button class="btn btn-danger btn-small" id="btn-end-session" style="display:none;">End Session</button>
           </div>
         </div>
 
