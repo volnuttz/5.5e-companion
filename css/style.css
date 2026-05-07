@@ -150,32 +150,14 @@ button.btn-danger:hover {
   border-color: hsl(0 70% 44%);
 }
 
-/* Start Session: forest green — signals a positive action, distinct from crimson tabs */
+/* Toggle thumb: white so it's always visible against the track */
+#session-toggle {
+  --tglbg: rgba(255, 255, 255, 0.9);
+}
 #session-toggle:checked {
-  --tglbg: var(--accent);
+  --tglbg: rgba(255, 255, 255, 0.9);
   background-color: var(--accent);
   border-color: var(--accent);
-}
-
-.session-toggle-fieldset {
-  border: 1.5px solid var(--border);
-  border-radius: 0.5rem;
-  padding: 0.25rem 0.75rem 0.5rem;
-  background: transparent;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.session-toggle-fieldset legend {
-  font-family: 'Cinzel', serif;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  padding: 0 0.25rem;
 }
 
 /* .btn-small is our existing name; map to DaisyUI btn-sm sizing */
@@ -408,23 +390,30 @@ input[type="checkbox"]:not(.collapse > input):not(.toggle):hover {
 }
 
 /* ============================================================
-   SESSION BAR
+   SIDEBAR SESSION SECTION
    ============================================================ */
-.session-bar {
+.sidebar-toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.625rem 1.25rem;
-  background: hsl(0, 0%, 97%);
-  border-bottom: 1px solid var(--border);
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+  cursor: pointer;
+  color: hsl(42, 38%, 93%);
+  font-size: 0.9rem;
 }
 
 #session-status {
-  font-size: 0.9rem;
-  color: var(--text-muted);
+  font-size: 0.78rem;
+  color: rgba(240, 236, 227, 0.55);
   font-style: italic;
+  min-height: 1rem;
+  margin-bottom: 0.5rem;
+}
+#session-status.pill-active {
+  color: hsl(142, 50%, 60%);
+}
+#session-status.pill-inactive {
+  color: rgba(240, 236, 227, 0.4);
 }
 
 /* ============================================================
