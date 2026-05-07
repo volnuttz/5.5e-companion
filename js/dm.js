@@ -1840,7 +1840,7 @@ function setupPeerHandlers() {
 
   // Show a notice in the session status if the DM loses signaling server connectivity.
   dmPeer.onSignalingDisconnect(() => {
-    if (currentSession) setSessionPill(`Session active (PIN: ${currentSession.pin}) — reconnecting…`, true);
+    if (currentSession) setSessionPill('Session active — reconnecting…', true);
   });
 
   dmPeer.onSignalingReconnect(() => {
@@ -1852,7 +1852,7 @@ function updatePeerStatus() {
   if (!currentSession) return;
   const players = dmPeer ? dmPeer.getConnectedPlayers() : [];
   const count = players.length;
-  setSessionPill(`Session active (PIN: ${currentSession.pin}) · ${count} player${count !== 1 ? 's' : ''}`, true);
+  setSessionPill(`Session active · ${count} player${count !== 1 ? 's' : ''}`, true);
 }
 
 function setSessionPill(text, active) {
