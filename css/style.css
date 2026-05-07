@@ -451,6 +451,14 @@ input[type="checkbox"]:not(.collapse > input):hover {
 .tab-content { display: none; padding-top: 1rem; }
 .tab-content.active { display: block; }
 
+@media (max-width: 480px) {
+  .tab {
+    font-size: 0.65rem !important;
+    padding: 0.5rem 0.2rem !important;
+    letter-spacing: 0.02em;
+  }
+}
+
 /* ============================================================
    MODALS (DaisyUI <dialog> with DND theme overrides)
    ============================================================ */
