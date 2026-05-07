@@ -169,7 +169,7 @@ button.btn-small {
 /* ============================================================
    CHECKBOXES — crimson D&D accent style
    ============================================================ */
-input[type="checkbox"]:not(.collapse > input) {
+input[type="checkbox"]:not(.collapse > input):not(.toggle) {
   appearance: none;
   -webkit-appearance: none;
   width: 16px;
@@ -182,11 +182,11 @@ input[type="checkbox"]:not(.collapse > input) {
   transition: background 0.15s, border-color 0.15s;
   position: relative;
 }
-input[type="checkbox"]:not(.collapse > input):checked {
+input[type="checkbox"]:not(.collapse > input):not(.toggle):checked {
   background-color: hsl(0, 60%, 40%);
   border-color: hsl(0, 60%, 36%);
 }
-input[type="checkbox"]:not(.collapse > input):checked::after {
+input[type="checkbox"]:not(.collapse > input):not(.toggle):checked::after {
   content: '';
   position: absolute;
   left: 3px;
@@ -198,7 +198,7 @@ input[type="checkbox"]:not(.collapse > input):checked::after {
   border-left: none;
   transform: rotate(45deg);
 }
-input[type="checkbox"]:not(.collapse > input):hover {
+input[type="checkbox"]:not(.collapse > input):not(.toggle):hover {
   border-color: hsl(0, 60%, 40%);
 }
 
