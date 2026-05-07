@@ -150,15 +150,15 @@ button.btn-danger:hover {
   border-color: hsl(0 70% 44%);
 }
 
-/* Start Session: dark gold — distinct from crimson tabs, fits D&D palette */
+/* Start Session: forest green — signals a positive action, distinct from crimson tabs */
 #btn-new-session {
-  background-color: hsl(40, 60%, 32%) !important;
-  border-color: hsl(40, 60%, 24%) !important;
+  background-color: hsl(150, 45%, 28%) !important;
+  border-color: hsl(150, 45%, 20%) !important;
   color: #fff !important;
 }
 #btn-new-session:hover {
-  background-color: hsl(40, 60%, 39%) !important;
-  border-color: hsl(40, 60%, 32%) !important;
+  background-color: hsl(150, 45%, 34%) !important;
+  border-color: hsl(150, 45%, 28%) !important;
 }
 
 /* .btn-small is our existing name; map to DaisyUI btn-sm sizing */
