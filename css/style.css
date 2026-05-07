@@ -157,6 +157,27 @@ button.btn-danger:hover {
   border-color: var(--accent);
 }
 
+.session-toggle-fieldset {
+  border: 1.5px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.75rem 0.5rem;
+  background: transparent;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.session-toggle-fieldset legend {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 0.25rem;
+}
+
 /* .btn-small is our existing name; map to DaisyUI btn-sm sizing */
 .btn.btn-small,
 button.btn-small {
