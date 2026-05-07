@@ -416,19 +416,15 @@ input[type="checkbox"]:not(.collapse > input):hover {
    ============================================================ */
 .tabs {
   display: flex !important;
-  overflow-x: auto;
+  flex-wrap: wrap;
   background: var(--bg-card);
-  scrollbar-width: none;
-  touch-action: pan-x;
-  -webkit-overflow-scrolling: touch;
 }
-.tabs::-webkit-scrollbar { display: none; }
 
 .tab {
   font-family: var(--font-heading);
   font-size: 0.82rem;
   letter-spacing: 0.04em;
-  padding: 0.75rem 1.125rem !important;
+  padding: 0.75rem 0.5rem !important;
   border: none !important;
   border-bottom: 2px solid transparent !important;
   margin-bottom: -2px;
@@ -440,6 +436,8 @@ input[type="checkbox"]:not(.collapse > input):hover {
   text-transform: uppercase;
   height: auto !important;
   min-height: unset !important;
+  flex: 1;
+  text-align: center;
 }
 .tab:hover { color: hsl(0, 51%, 30%) !important; background: hsla(0, 51%, 36%, 0.05) !important; }
 .tab.tab-active,
