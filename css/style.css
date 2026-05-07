@@ -342,25 +342,6 @@ input[type="checkbox"]:not(.collapse > input):hover {
   text-align: center;
 }
 
-/* Peer status — green dot when players are connected */
-#peer-status:not(:empty) {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-family: var(--font-body);
-  font-size: 0.8rem;
-  color: rgba(240,236,227,0.7) !important;
-}
-#peer-status:not(:empty)::before {
-  content: '';
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: hsl(142, 60%, 45%);
-  box-shadow: 0 0 6px hsl(142, 70%, 50%);
-  flex-shrink: 0;
-}
 
 /* ============================================================
    DRAWER SIDE (sidebar) — DaisyUI drawer with custom DND styling
