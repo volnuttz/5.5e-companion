@@ -118,7 +118,6 @@
               <div class="flex justify-end gap-2 mb-3">
                 <button class="btn btn-primary btn-small" id="btn-add-monsters">+ Add Monsters</button>
                 <button class="btn btn-secondary btn-small" onclick="toggleAddPCRow()">+ Add PC</button>
-                <button class="btn btn-secondary btn-small" onclick="addCustomMonster()">+ Add Custom</button>
               </div>
               <div id="bf-add-pc-row" style="display:none;" class="flex gap-2 mb-3 items-center">
                 <select id="bf-add-pc-select" class="select select-sm select-bordered flex-1"></select>
@@ -127,7 +126,7 @@
               </div>
               <div id="battlefield-list"></div>
               <div id="bf-characters-list"></div>
-              <p id="battlefield-empty" class="empty-state">No monsters on the battlefield. Use "+ Add Monsters" to search the SRD, or "+ Add Custom" for homebrew creatures.</p>
+              <p id="battlefield-empty" class="empty-state">No monsters on the battlefield. Use "+ Add Monsters" to search the SRD or add a custom creature.</p>
               <p id="bf-characters-empty" class="empty-state">No characters on the battlefield yet.</p>
             </div>
           </div>
@@ -550,6 +549,9 @@
           <select id="monster-cr-filter"><option value="">All CR</option></select>
         </div>
         <div id="monster-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
+      </div>
+      <div class="modal-footer" style="padding-top:0.75rem;border-top:1px solid var(--border);margin-top:0.75rem;">
+        <button class="btn btn-secondary btn-small" onclick="document.getElementById('monster-search-modal').close(); addCustomMonster();">+ Add Custom</button>
       </div>
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
