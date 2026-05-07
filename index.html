@@ -77,17 +77,6 @@
       <!-- ===================== MAIN CONTENT ===================== -->
       <div class="container">
 
-        <!-- Session Bar -->
-        <div class="session-bar">
-          <div class="flex gap-2 items-center">
-            <fieldset class="session-toggle-fieldset">
-              <legend>Share Session</legend>
-              <input type="checkbox" id="session-toggle" class="toggle toggle-lg" />
-            </fieldset>
-            <button class="btn btn-secondary btn-small" id="btn-show-qr" style="display:none;">Show QR</button>
-          </div>
-        </div>
-
         <!-- DM Tabs -->
         <div role="tablist" class="tabs tabs-bordered">
           <button role="tab" id="tab-btn-characters" class="tab tab-active" data-tab="dm-tab-characters" aria-selected="true" aria-controls="dm-tab-characters">Characters</button>
@@ -190,6 +179,16 @@
         <div class="sidebar-header">
           <span class="sidebar-title">Menu</span>
           <button class="btn btn-ghost btn-sm text-neutral-content/60" onclick="closeSidebar()" aria-label="Close menu">✕</button>
+        </div>
+
+        <div class="sidebar-section sidebar-session">
+          <h3>Session</h3>
+          <label class="sidebar-toggle-row">
+            <span>Share Session</span>
+            <input type="checkbox" id="session-toggle" class="toggle toggle-sm" />
+          </label>
+          <div id="session-status" class="sidebar-session-status"></div>
+          <button class="btn btn-sm sidebar-btn" id="btn-show-qr" style="display:none;">Show QR Code</button>
         </div>
 
         <div class="sidebar-section">
