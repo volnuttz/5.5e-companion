@@ -1708,8 +1708,11 @@ async function createSession() {
 
   // Build session characters from all characters
   const chars = await db.getAllCharacters();
+  const savedPCIds = (await db.getState('battlefieldPCs')) || [];
   const characters = {};
-  chars.forEach(c => { characters[c._id] = { claimedBy: null }; });
+  chars.forEach(c => {
+    characters[c._id] = { claimedBy: null, onBattlefield: savedPCIds.includes(c._id) };
+  });
   currentSession = { pin, characters };
 
   // Initialize PeerJS
@@ -1777,6 +1780,8 @@ function setupPeerHandlers() {
         // Previous claimer disconnected or connection dead — allow reclaim.
       }
       charEntry.claimedBy = playerName;
+      charEntry.onBattlefield = true;
+      saveBattlefieldPCIds();
       dmPeer.setPlayerInfo(peerId, playerName, characterId);
 
       // Send full character data
@@ -1994,6 +1999,44 @@ function saveBattlefield() {
     return { name: m.name, _label: m._label, currentHP: m.currentHP };
   });
   db.saveBattlefield(compact);
+}
+
+function saveBattlefieldPCIds() {
+  if (!currentSession) return;
+  const ids = Object.keys(currentSession.characters)
+    .filter(id => currentSession.characters[id].onBattlefield);
+  db.putState('battlefieldPCs', ids);
+}
+
+function toggleAddPCRow() {
+  const row = document.getElementById('bf-add-pc-row');
+  if (row.style.display !== 'none') { row.style.display = 'none'; return; }
+  if (!currentSession) { dialogAlert('Start a session first.', 'No Session', 'info'); return; }
+  const sessionChars = currentSession.characters;
+  const available = allCharacters.filter(c => !sessionChars[c._id]?.onBattlefield);
+  if (available.length === 0) { dialogAlert('All characters are already on the battlefield.', 'Info', 'info'); return; }
+  const select = document.getElementById('bf-add-pc-select');
+  select.innerHTML = available.map(c => `<option value="${c._id}">${esc(c.name)}</option>`).join('');
+  row.style.display = 'flex';
+}
+
+function addPCToBattlefield(characterId) {
+  if (!currentSession || !characterId) return;
+  if (!currentSession.characters[characterId]) {
+    currentSession.characters[characterId] = { claimedBy: null, onBattlefield: false };
+  }
+  currentSession.characters[characterId].onBattlefield = true;
+  saveBattlefieldPCIds();
+  renderBattlefieldCharacters();
+  document.getElementById('bf-add-pc-row').style.display = 'none';
+}
+
+function removePCFromBattlefield(characterId) {
+  if (!currentSession || !currentSession.characters[characterId]) return;
+  currentSession.characters[characterId].onBattlefield = false;
+  currentSession.characters[characterId].claimedBy = null;
+  saveBattlefieldPCIds();
+  renderBattlefieldCharacters();
 }
 
 function relabelBattlefield() {
@@ -2236,12 +2279,12 @@ async function renderBattlefieldCharacters() {
   }
 
   const sessionChars = currentSession.characters || {};
-  const charIds = Object.keys(sessionChars).filter(id => sessionChars[id].claimedBy);
+  const charIds = Object.keys(sessionChars).filter(id => sessionChars[id].onBattlefield);
   if (charIds.length === 0) {
     bfCharactersCache = [];
     container.innerHTML = '';
     emptyMsg.style.display = '';
-    emptyMsg.textContent = 'No characters claimed yet.';
+    emptyMsg.textContent = 'No characters on the battlefield yet.';
     return;
   }
 
@@ -2279,11 +2322,17 @@ function drawBattlefieldCharacters() {
     let hpColor = 'var(--hp-high)';
     if (hpPercent <= 25) hpColor = 'var(--hp-low)';
     else if (hpPercent <= 50) hpColor = 'var(--hp-mid)';
+    const sessionEntry = currentSession && currentSession.characters[c._id];
+    const playerLabel = sessionEntry?.claimedBy
+      ? `<span style="color:var(--accent);font-size:0.75rem;">${esc(sessionEntry.claimedBy)}</span>`
+      : `<span style="color:var(--text-muted);font-size:0.75rem;">(no player)</span>`;
     return `
       <div class="bf-card" data-char-hp-id="${c._id}">
         <div class="bf-header">
           <strong>${esc(c.name)}</strong>
           <span style="color:var(--text-muted);font-size:0.8rem;">Lvl ${c.level} ${esc(c.species || '')} ${esc(c.class)} | AC ${c.AC}</span>
+          ${playerLabel}
+          <button class="hp-btn hp-btn-sm" onclick="removePCFromBattlefield('${c._id}')" title="Remove from battlefield" style="margin-left:auto;font-size:0.7rem;padding:0 6px;">✕</button>
         </div>
         <div class="bf-hp-row">
           <button class="hp-btn" onclick="charHP('${c._id}', -1, ${c.HP})">−</button>

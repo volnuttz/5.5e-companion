@@ -118,6 +118,12 @@
               <div class="flex justify-end gap-2 mb-3">
                 <button class="btn btn-primary btn-small" id="btn-add-monsters">Add Monsters</button>
                 <button class="btn btn-secondary btn-small" onclick="addCustomMonster()">+ Add Custom</button>
+                <button class="btn btn-accent btn-small" onclick="toggleAddPCRow()">+ Add PC</button>
+              </div>
+              <div id="bf-add-pc-row" style="display:none;" class="flex gap-2 mb-3 align-items-center">
+                <select id="bf-add-pc-select" class="select select-sm select-bordered flex-1"></select>
+                <button class="btn btn-sm btn-primary" onclick="addPCToBattlefield(document.getElementById('bf-add-pc-select').value)">Add</button>
+                <button class="btn btn-sm btn-ghost" onclick="document.getElementById('bf-add-pc-row').style.display='none'">Cancel</button>
               </div>
               <div id="battlefield-list"></div>
               <div id="bf-characters-list"></div>
