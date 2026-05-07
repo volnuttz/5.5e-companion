@@ -1209,13 +1209,80 @@ input[type="checkbox"]:not(.collapse > input):hover {
   background: hsl(0, 0%, 65%);
 }
 .session-pill.pill-active {
-  background: hsl(153, 30%, 90%);
-  color: hsl(153, 47%, 28%);
-  border-color: hsl(153, 35%, 75%);
+  background: hsl(0, 30%, 92%);
+  color: hsl(0, 47%, 30%);
+  border-color: hsl(0, 35%, 75%);
 }
 .session-pill.pill-active::before {
-  background: hsl(142, 60%, 45%);
-  box-shadow: 0 0 5px hsl(142, 70%, 50%);
+  background: var(--accent);
+  box-shadow: 0 0 5px hsl(0, 51%, 50%);
+}
+
+/* ============================================================
+   SESSION TOGGLE SWITCH
+   ============================================================ */
+.session-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.session-toggle-label {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+.session-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 2.5rem;
+  height: 1.4rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.session-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.session-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: hsl(0, 0%, 72%);
+  border-radius: 99px;
+  transition: background 0.25s;
+}
+.session-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  left: 0.2rem;
+  top: 0.2rem;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.session-toggle-switch input:checked + .session-toggle-slider {
+  background: var(--accent);
+}
+.session-toggle-switch input:checked + .session-toggle-slider::before {
+  transform: translateX(1.1rem);
+}
+.session-toggle-state {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 1.5rem;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.session-toggle-state.state-on {
+  color: var(--accent);
 }
 
 /* ============================================================
