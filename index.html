@@ -82,16 +82,12 @@
           <div class="flex items-center gap-2">
             <span id="session-status" class="session-pill pill-inactive">No active session</span>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex gap-2 items-center">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <span class="text-sm font-semibold" style="color:var(--text-muted);">Share Session</span>
+              <input type="checkbox" id="session-toggle" class="toggle toggle-sm" />
+            </label>
             <button class="btn btn-secondary btn-small" id="btn-show-qr" style="display:none;">Show QR</button>
-            <div class="session-toggle-wrap">
-              <span class="session-toggle-label">Share Session</span>
-              <label class="session-toggle-switch" for="toggle-session">
-                <input type="checkbox" id="toggle-session" role="switch" aria-label="Toggle session sharing">
-                <span class="session-toggle-slider"></span>
-              </label>
-              <span id="session-toggle-state" class="session-toggle-state">Off</span>
-            </div>
           </div>
         </div>
 
