@@ -3134,7 +3134,7 @@ function renderShops() {
           ${itemsHtml || '<p style="color:var(--text-muted);margin:4px 0;">No items in this shop yet.</p>'}
         </div>
         <div style="display:flex;gap:8px;margin-top:8px;">
-          <button type="button" class="btn btn-primary btn-small" onclick="openShopItemModal(${si})">Add Items</button>
+          <button type="button" class="btn btn-primary btn-small" onclick="openShopItemModal(${si})">+ Add Items</button>
           <button type="button" class="btn btn-secondary btn-small" onclick="addCustomShopItem(${si})">+ Add Custom</button>
         </div>
       </div>`;
