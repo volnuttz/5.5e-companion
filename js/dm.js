@@ -2626,6 +2626,14 @@ function showToast(msg) {
   if (!el || !container) return;
   clearTimeout(_toastTimer);
   el.textContent = msg;
+  // Reparent the toast into the topmost open <dialog> so it renders in the
+  // dialog's top layer (visible above the modal). Fall back to <body>.
+  const openDialogs = document.querySelectorAll('dialog[open]');
+  const targetDialog = openDialogs[openDialogs.length - 1] || null;
+  const desiredParent = targetDialog || document.body;
+  if (container.parentNode !== desiredParent) {
+    desiredParent.appendChild(container);
+  }
   container.style.display = '';
   _toastTimer = setTimeout(() => { container.style.display = 'none'; }, 2000);
 }
@@ -3136,17 +3144,17 @@ function renderShops() {
   container.innerHTML = shops.map((shop, si) => {
     const itemsHtml = shop.items.map((item, ii) => {
       if (item._editing) {
-        return `<div class="list-item" style="flex-wrap:wrap;padding:8px 12px;gap:6px;border-left:3px solid var(--gold);">
-            <div class="form-group" style="flex:2;margin:0;"><input type="text" class="shop-item-name" value="${esc(item.name)}" placeholder="Item name" onchange="updateShopItem(${si},${ii},'name',this.value)"></div>
-            <div class="form-group" style="flex:1;margin:0;min-width:100px;"><input type="text" value="${esc(item.type)}" placeholder="Type" onchange="updateShopItem(${si},${ii},'type',this.value)"></div>
-            <div class="form-group" style="flex:0 0 70px;margin:0;"><input type="number" value="${item.price}" min="0" style="width:100%;" onchange="updateShopItem(${si},${ii},'price',this.value)"></div>
-            <div class="form-group" style="flex:0 0 70px;margin:0;">
-              <select onchange="updateShopItem(${si},${ii},'denomination',this.value)" style="width:100%;">
+        return `<div class="list-item shop-item-edit-row" style="border-left:3px solid var(--gold);">
+            <div class="form-group shop-edit-name"><label>Name</label><input type="text" class="shop-item-name" value="${esc(item.name)}" placeholder="Item name" onchange="updateShopItem(${si},${ii},'name',this.value)"></div>
+            <div class="form-group shop-edit-type"><label>Type</label><input type="text" value="${esc(item.type)}" placeholder="Type" onchange="updateShopItem(${si},${ii},'type',this.value)"></div>
+            <div class="form-group shop-edit-price"><label>Price</label><input type="number" value="${item.price}" min="0" onchange="updateShopItem(${si},${ii},'price',this.value)"></div>
+            <div class="form-group shop-edit-denom"><label>Denom.</label>
+              <select onchange="updateShopItem(${si},${ii},'denomination',this.value)">
                 ${['CP','SP','EP','GP','PP'].map(d => `<option value="${d}" ${item.denomination === d ? 'selected' : ''}>${d}</option>`).join('')}
               </select>
             </div>
-            <div class="form-group" style="flex:1 1 100%;margin:0;"><input type="text" value="${esc(item.description)}" placeholder="Description" onchange="updateShopItem(${si},${ii},'description',this.value)"></div>
-            <div class="item-actions" style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+            <div class="form-group shop-edit-desc"><label>Description</label><input type="text" value="${esc(item.description)}" placeholder="Description" onchange="updateShopItem(${si},${ii},'description',this.value)"></div>
+            <div class="item-actions shop-edit-actions">
               <button type="button" class="btn btn-primary btn-small" onclick="finishCustomShopItem(${si},${ii})">Done</button>
               <button type="button" class="remove-item" onclick="removeShopItem(${si},${ii})">&times;</button>
             </div>

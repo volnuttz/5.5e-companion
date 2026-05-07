@@ -1146,6 +1146,78 @@ input[type="checkbox"]:not(.collapse > input):not(.toggle):hover {
 .stat-block-action { font-size: 0.9rem; margin-bottom: 0.625rem; line-height: 1.55; }
 
 /* ============================================================
+   SHOP CUSTOM ITEM EDIT ROW
+   Grid-based so fields stay readable on every viewport.
+   ============================================================ */
+.shop-item-edit-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 90px 90px auto;
+  grid-template-areas:
+    "name  type  price denom actions"
+    "desc  desc  desc  desc  actions";
+  align-items: end;
+  gap: 0.5rem 0.625rem;
+  padding: 0.625rem 0.875rem;
+}
+.shop-item-edit-row .form-group {
+  margin: 0;
+  min-width: 0;
+}
+.shop-item-edit-row .form-group label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  letter-spacing: 0.04em;
+  margin-bottom: 0.2rem;
+}
+.shop-item-edit-row input,
+.shop-item-edit-row select {
+  width: 100%;
+  box-sizing: border-box;
+}
+.shop-edit-name    { grid-area: name; }
+.shop-edit-type    { grid-area: type; }
+.shop-edit-price   { grid-area: price; }
+.shop-edit-denom   { grid-area: denom; }
+.shop-edit-desc    { grid-area: desc; }
+.shop-edit-actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: end;
+  padding-bottom: 0.1rem;
+}
+
+@media (max-width: 768px) {
+  .shop-item-edit-row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "name    name"
+      "type    type"
+      "price   denom"
+      "desc    desc"
+      "actions actions";
+    gap: 0.625rem 0.625rem;
+    padding: 0.75rem 0.875rem;
+  }
+  .shop-item-edit-row .form-group label {
+    font-size: 0.72rem;
+  }
+  .shop-item-edit-row input,
+  .shop-item-edit-row select {
+    font-size: 16px; /* prevent iOS zoom */
+    padding: 0.5rem 0.625rem;
+    min-height: 2.5rem;
+  }
+  .shop-edit-actions {
+    justify-content: flex-end;
+    padding-top: 0.25rem;
+  }
+}
+
+/* ============================================================
    TOAST (DaisyUI toast with DND styling)
    ============================================================ */
 .toast {
@@ -1163,6 +1235,25 @@ input[type="checkbox"]:not(.collapse > input):not(.toggle):hover {
   background-color: hsl(0, 0%, 22%);
   color: hsl(0, 0%, 95%);
   border-color: hsl(0, 0%, 35%);
+}
+/* Mobile: center the toast at the top so it's clearly visible above modals
+   and not clipped by safe-area or the keyboard at the bottom of the screen. */
+@media (max-width: 600px) {
+  .toast {
+    top: calc(env(safe-area-inset-top) + 0.75rem) !important;
+    bottom: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100vw - 1.5rem);
+  }
+  .toast .alert {
+    font-size: 0.85rem;
+    padding: 0.7rem 1rem;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  }
 }
 
 /* ============================================================
