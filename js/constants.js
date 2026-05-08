@@ -1,3 +1,56 @@
+/* ============================================================
+   Modal focus management — shared by DM and player pages.
+   Patches HTMLDialogElement.prototype once so every <dialog>
+   used as a modal returns focus to its trigger on close, and
+   moves focus to the first meaningful field on open (skipping
+   the × close button which would otherwise win on source order).
+   ============================================================ */
+(function setupModalFocus() {
+  if (typeof HTMLDialogElement === 'undefined') return;
+  const proto = HTMLDialogElement.prototype;
+  if (proto.__focusPatched) return;
+  proto.__focusPatched = true;
+
+  const FOCUSABLE = [
+    'input:not([type="hidden"]):not([disabled]):not([readonly])',
+    'textarea:not([disabled])',
+    'select:not([disabled])',
+    'button:not([disabled]):not(.modal-close)',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(',');
+
+  const origShow = proto.showModal;
+  const origClose = proto.close;
+
+  proto.showModal = function (...args) {
+    const active = document.activeElement;
+    this._returnFocus = (active instanceof HTMLElement && active !== document.body) ? active : null;
+    const result = origShow.apply(this, args);
+    requestAnimationFrame(() => {
+      if (!this.open) return;
+      // Respect explicit autofocus if the browser already honored it.
+      if (this.querySelector('[autofocus]') && this.contains(document.activeElement)) return;
+      const target = this.querySelector(FOCUSABLE);
+      if (target && typeof target.focus === 'function') {
+        try { target.focus({ preventScroll: false }); } catch (_) { target.focus(); }
+      }
+    });
+    return result;
+  };
+
+  proto.close = function (...args) {
+    const ret = this._returnFocus;
+    this._returnFocus = null;
+    const result = origClose.apply(this, args);
+    if (ret && document.contains(ret) && typeof ret.focus === 'function') {
+      requestAnimationFrame(() => {
+        try { ret.focus({ preventScroll: true }); } catch (_) {}
+      });
+    }
+    return result;
+  };
+})();
+
 const CLASSES = [
   'Barbarian', 'Bard', 'Cleric', 'Druid', 'Fighter',
   'Monk', 'Paladin', 'Ranger', 'Rogue', 'Sorcerer',

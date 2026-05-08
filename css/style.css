@@ -490,6 +490,12 @@ input[type="checkbox"]:not(.collapse > input):not(.toggle):hover {
   animation: modalIn 0.18s ease;
 }
 
+/* Modal size tokens — replaces ad-hoc inline max-width overrides */
+.modal-box.modal-sm { max-width: 420px; }
+.modal-box.modal-md { max-width: 600px; }
+.modal-box.modal-lg { max-width: 760px; }
+.modal-box.modal-xl { max-width: 1024px; }
+
 @keyframes modalIn {
   from { opacity: 0; transform: translateY(-12px) scale(0.98); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
@@ -523,9 +529,9 @@ input[type="checkbox"]:not(.collapse > input):not(.toggle):hover {
   overscroll-behavior: contain;
 }
 
-/* Dialog modal (alert / confirm / prompt) — higher z-index so it sits above other modals */
+/* Dialog modal (alert / confirm / prompt) — must sit above modals AND toasts */
 #dialog-overlay {
-  z-index: 1000;
+  z-index: 1200;
 }
 #dialog-overlay .modal-box {
   padding: 2rem;
@@ -1394,10 +1400,20 @@ input[type="checkbox"]:not(.collapse > input):not(.toggle):hover {
   .modal-box {
     border-radius: var(--radius) var(--radius) 0 0 !important;
     max-height: 95dvh;
+    /* Override any inline/utility max-width caps (e.g. style="max-width:760px"
+       or `max-w-5xl`) so modals always fill the viewport on phones. */
+    width: 100% !important;
+    max-width: 100% !important;
   }
   .modal-body {
     max-height: calc(95dvh - 6rem);
     padding: 0.75rem 0.875rem;
+  }
+  /* Search-result lists embedded directly in a modal body should not have
+     their own scroll on mobile — let the modal body be the single scroll
+     container so we don't get nested scroll regions. */
+  .modal-body > .modal-results {
+    max-height: none !important;
   }
   /* More breathing room inside collapsibles on small screens */
   .char-form-collapse .collapse-content {

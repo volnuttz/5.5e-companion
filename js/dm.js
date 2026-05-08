@@ -2421,9 +2421,7 @@ function closeSearchDropdown() {
 }
 
 function openMobileSearchModal() {
-  const modal = document.getElementById('mobile-search-modal');
-  modal.showModal();
-  setTimeout(() => document.getElementById('mobile-search-input').focus(), 50);
+  document.getElementById('mobile-search-modal').showModal();
 }
 
 function closeMobileSearchModal() {
