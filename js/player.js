@@ -1,12 +1,27 @@
-// --- Dialog helper ---
+// --- Dialog helper (mirrors the DM-side showDialog/dialogAlert API
+//     so both pages behave the same on ESC, focus return, etc.) ---
 function dialogAlert(message, title, type = 'info') {
-  const overlay = document.getElementById('dialog-overlay');
-  document.getElementById('dialog-title').textContent = title || 'Notice';
-  document.getElementById('dialog-message').textContent = message;
-  const btns = document.getElementById('dialog-buttons');
-  btns.innerHTML = '<button class="btn btn-primary btn-small">OK</button>';
-  btns.querySelector('button').addEventListener('click', () => overlay.close());
-  overlay.showModal();
+  return new Promise(resolve => {
+    const overlay = document.getElementById('dialog-overlay');
+    const titleEl = document.getElementById('dialog-title');
+    const msgEl = document.getElementById('dialog-message');
+    const btnsEl = document.getElementById('dialog-buttons');
+
+    titleEl.textContent = title || (type === 'error' ? 'Error' : 'Notice');
+    msgEl.textContent = message || '';
+    btnsEl.innerHTML = '<button class="btn btn-primary btn-small">OK</button>';
+
+    const done = () => {
+      overlay.removeEventListener('cancel', onCancel);
+      overlay.close();
+      resolve();
+    };
+    const onCancel = (e) => { e.preventDefault(); done(); };
+
+    btnsEl.querySelector('button').addEventListener('click', done);
+    overlay.addEventListener('cancel', onCancel);
+    overlay.showModal();
+  });
 }
 
 // SKILL_ABILITIES is defined in constants.js

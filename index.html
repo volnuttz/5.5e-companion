@@ -224,10 +224,10 @@
        ============================================================ -->
 
   <!-- QR Code Modal -->
-  <dialog id="qr-modal" class="modal">
-    <div class="modal-box" style="max-width:420px;text-align:center;">
+  <dialog id="qr-modal" class="modal" aria-modal="true" aria-labelledby="qr-modal-title">
+    <div class="modal-box modal-sm" style="text-align:center;">
       <div class="modal-header">
-        <h2>Session QR Code</h2>
+        <h2 id="qr-modal-title">Session QR Code</h2>
         <button class="modal-close" onclick="document.getElementById('qr-modal').close()" aria-label="Close">✕</button>
       </div>
       <div class="qr-container modal-body">
@@ -243,10 +243,10 @@
   </dialog>
 
   <!-- Mobile Search Modal -->
-  <dialog id="mobile-search-modal" class="modal mobile-search-modal">
+  <dialog id="mobile-search-modal" class="modal mobile-search-modal" aria-modal="true" aria-label="Search compendium">
     <div class="modal-box mobile-search-box">
       <div class="mobile-search-header">
-        <input type="text" id="mobile-search-input" class="input input-bordered w-full" placeholder="Search compendium…" autocomplete="off">
+        <input type="text" id="mobile-search-input" class="input input-bordered w-full" placeholder="Search compendium…" autocomplete="off" autofocus>
         <button class="modal-close" onclick="closeMobileSearchModal()" aria-label="Close">✕</button>
       </div>
       <div class="mobile-search-filters">
@@ -293,7 +293,7 @@
   </dialog>
 
   <!-- Compendium Detail Modal -->
-  <dialog id="compendium-modal" class="modal">
+  <dialog id="compendium-modal" class="modal" aria-modal="true" aria-labelledby="compendium-modal-title">
     <div class="modal-box">
       <div class="modal-header">
         <h2 id="compendium-modal-title"></h2>
@@ -305,8 +305,8 @@
   </dialog>
 
   <!-- Character Edit Modal -->
-  <dialog id="char-modal" class="modal">
-    <div class="modal-box" style="max-width:760px;">
+  <dialog id="char-modal" class="modal" aria-modal="true" aria-labelledby="char-modal-title">
+    <div class="modal-box modal-lg">
       <div class="modal-header">
         <h2 id="char-modal-title">New Character</h2>
         <button class="modal-close" onclick="closeCharModal()" aria-label="Close">✕</button>
@@ -520,8 +520,8 @@
   </dialog>
 
   <!-- Level Up Modal -->
-  <dialog id="levelup-modal" class="modal">
-    <div class="modal-box" style="max-width:600px;">
+  <dialog id="levelup-modal" class="modal" aria-modal="true" aria-labelledby="levelup-title">
+    <div class="modal-box modal-md">
       <div class="modal-header">
         <h2 id="levelup-title">Level Up</h2>
         <button class="modal-close" onclick="document.getElementById('levelup-modal').close()" aria-label="Close">✕</button>
@@ -532,10 +532,10 @@
   </dialog>
 
   <!-- Add Monsters Modal -->
-  <dialog id="monster-search-modal" class="modal">
+  <dialog id="monster-search-modal" class="modal" aria-modal="true" aria-labelledby="monster-search-modal-title">
     <div class="modal-box">
       <div class="modal-header">
-        <h2>Add Monsters</h2>
+        <h2 id="monster-search-modal-title">Add Monsters</h2>
         <button class="modal-close" onclick="document.getElementById('monster-search-modal').close()" aria-label="Close">✕</button>
       </div>
       <div class="modal-body">
@@ -545,17 +545,17 @@
           <select id="monster-cr-filter"><option value="">All CR</option></select>
           <button class="btn btn-secondary btn-small" style="white-space:nowrap;" onclick="document.getElementById('monster-search-modal').close(); addCustomMonster();">+ Add Custom</button>
         </div>
-        <div id="monster-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
+        <div id="monster-results" class="list-section modal-results" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
       </div>
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
 
   <!-- Add PC to Battlefield Modal -->
-  <dialog id="add-pc-modal" class="modal">
-    <div class="modal-box" style="max-width:420px;">
+  <dialog id="add-pc-modal" class="modal" aria-modal="true" aria-labelledby="add-pc-modal-title">
+    <div class="modal-box modal-sm">
       <div class="modal-header">
-        <h2>Add PC to Battlefield</h2>
+        <h2 id="add-pc-modal-title">Add PC to Battlefield</h2>
         <button class="modal-close" onclick="document.getElementById('add-pc-modal').close()" aria-label="Close">✕</button>
       </div>
       <div class="modal-body">
@@ -566,7 +566,7 @@
   </dialog>
 
   <!-- Monster Stat Block Modal -->
-  <dialog id="monster-modal" class="modal">
+  <dialog id="monster-modal" class="modal" aria-modal="true" aria-labelledby="monster-modal-title">
     <div class="modal-box">
       <div class="modal-header">
         <h2 id="monster-modal-title">Monster</h2>
@@ -578,10 +578,10 @@
   </dialog>
 
   <!-- Add Items (Treasure) Modal -->
-  <dialog id="treasure-search-modal" class="modal">
+  <dialog id="treasure-search-modal" class="modal" aria-modal="true" aria-labelledby="treasure-search-modal-title">
     <div class="modal-box">
       <div class="modal-header">
-        <h2>Add Items</h2>
+        <h2 id="treasure-search-modal-title">Add Items</h2>
         <button class="modal-close" onclick="document.getElementById('treasure-search-modal').close()" aria-label="Close">✕</button>
       </div>
       <div class="modal-body">
@@ -595,17 +595,17 @@
           </select>
           <button class="btn btn-secondary btn-small" style="white-space:nowrap;" onclick="document.getElementById('treasure-search-modal').close(); addCustomTreasure();">+ Add Custom</button>
         </div>
-        <div id="treasure-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
+        <div id="treasure-results" class="list-section modal-results" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
       </div>
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
 
   <!-- Shop Item Search Modal -->
-  <dialog id="shop-search-modal" class="modal">
+  <dialog id="shop-search-modal" class="modal" aria-modal="true" aria-labelledby="shop-search-modal-title">
     <div class="modal-box">
       <div class="modal-header">
-        <h2>Add Shop Items</h2>
+        <h2 id="shop-search-modal-title">Add Shop Items</h2>
         <button class="modal-close" onclick="document.getElementById('shop-search-modal').close()" aria-label="Close">✕</button>
       </div>
       <div class="modal-body">
@@ -619,17 +619,17 @@
           </select>
           <button class="btn btn-secondary btn-small" style="white-space:nowrap;" onclick="document.getElementById('shop-search-modal').close(); addCustomShopItemFromModal();">+ Add Custom</button>
         </div>
-        <div id="shop-item-results" class="list-section" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
+        <div id="shop-item-results" class="list-section modal-results" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;display:none;"></div>
       </div>
     </div>
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
 
   <!-- Character Preview Modal (Player-sheet view, shared URL) -->
-  <dialog id="char-preview-modal" class="modal">
-    <div class="modal-box w-full max-w-5xl" style="min-height:80vh;">
+  <dialog id="char-preview-modal" class="modal" aria-modal="true" aria-labelledby="char-preview-modal-title">
+    <div class="modal-box modal-xl" style="min-height:80vh;">
       <div class="modal-header">
-        <h2>Character Preview</h2>
+        <h2 id="char-preview-modal-title">Character Preview</h2>
         <div style="display:flex;gap:8px;align-items:center;">
           <button class="btn btn-secondary btn-sm" onclick="copyCurrentPreviewLink()">Copy share link</button>
           <button class="modal-close" onclick="document.getElementById('char-preview-modal').close()" aria-label="Close">✕</button>
@@ -641,7 +641,7 @@
   </dialog>
 
   <!-- Generic Dialog Modal (alert / confirm / prompt) -->
-  <dialog id="dialog-overlay" class="modal">
+  <dialog id="dialog-overlay" class="modal" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-message">
     <div class="modal-box max-w-md text-center">
       <h3 class="font-bold text-lg" id="dialog-title"></h3>
       <p class="py-2" id="dialog-message"></p>
@@ -649,8 +649,8 @@
     </div>
   </dialog>
 
-  <!-- Toast (DaisyUI) -->
-  <div class="toast toast-end z-[1100]" id="toast-container" style="display:none;">
+  <!-- Toast (DaisyUI) — sits below dialog overlay (z-1200) so confirms stay readable -->
+  <div class="toast toast-end z-[950]" id="toast-container" style="display:none;">
     <div class="alert bg-neutral text-neutral-content border-neutral-content/15 shadow-lg" id="toast"></div>
   </div>
 
