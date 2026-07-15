@@ -18,7 +18,7 @@ A web app for tabletop 5.5e sessions. DMs manage characters and track battlefiel
 
 ## Tech Stack
 
-- **Hosting:** GitHub Pages (fully static, no server required)
+- **Hosting:** GitHub Pages (fully static, deployed from published GitHub Releases)
 - **Storage:** IndexedDB (client-side, DM's browser is source of truth)
 - **Real-time:** PeerJS / WebRTC data channels (public cloud signaling)
 - **Frontend:** Vanilla HTML/CSS/JS + DaisyUI 4 + Tailwind CSS (CDN, no build step)
@@ -48,7 +48,8 @@ Open `http://localhost:8000/index.html` for DM or `http://localhost:8000/player.
 ## Project Structure
 
 ```
-├── server.js            # Local dev static file server (not used in production)
+├── .github/workflows/   # Static validation and release-only Pages deployment
+├── docs/                # Architecture, development, and release guidance
 ├── data/                # SRD 5.2 reference data (read-only JSON)
 ├── css/style.css        # Parchment theme styles
 ├── js/
@@ -57,10 +58,16 @@ Open `http://localhost:8000/index.html` for DM or `http://localhost:8000/player.
 │   ├── peer.js          # PeerJS communication layer
 │   ├── dm.js            # DM dashboard logic
 │   └── player.js        # Player character sheet logic
+├── manifest.webmanifest # Installable web-app metadata
+├── sw.js                # Offline shell and release-versioned cache
 ├── index.html           # DM dashboard page
 ├── player.html          # Player view page
 └── LICENSE-SRD          # SRD 5.2 CC BY 4.0 attribution
 ```
+
+## Releases
+
+See [docs/releasing.md](docs/releasing.md) for the release process and the one-time GitHub Pages configuration change. Run `npm run verify` before merging or publishing.
 
 ## License
 
